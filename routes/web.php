@@ -9,6 +9,7 @@ use App\Http\Controllers\Vendor\ProductController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Admin\ProductApprovalController;
+use App\Http\Controllers\Auth\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ use App\Http\Controllers\Admin\ProductApprovalController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Google OAuth (guest)
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('oauth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('oauth.google.callback');
 
 /*
 |--------------------------------------------------------------------------
