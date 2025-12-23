@@ -1,51 +1,162 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('page-title', 'Vendors Management')
 
 @section('content')
-<div>
-    <h1 class="section-title">Vendors</h1>
-
-    @if(session('status'))
-        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('status') }}</div>
-    @endif
-
-    <div class="card">
-        <table class="table divide-y divide-gray-200">
-            <thead>
-                <tr>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($vendors as $vendor)
-                    <tr>
-                        <td class="px-4 py-2">{{ $vendor->company_name }}</td>
-                        <td class="px-4 py-2">{{ $vendor->user->name ?? '—' }}</td>
-                        <td class="px-4 py-2 capitalize">
-                            <span class="badge {{ $vendor->status === 'approved' ? 'badge-active' : ($vendor->status === 'blocked' ? 'badge-inactive' : 'badge-pending') }}">{{ $vendor->status }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-right space-x-2">
-                            <form action="{{ route('admin.vendors.approve', $vendor) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button class="btn-secondary">Approve</button>
-                            </form>
-                            <form action="{{ route('admin.vendors.block', $vendor) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button class="btn-primary">Block</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">No vendors found</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Vendors Management</h2>
+            <p class="text-muted mb-0">Manage and moderate vendor accounts</p>
+        </div>
     </div>
 
-    <div class="mt-4">{{ $vendors->links() }}</div>
+    @if(session('status'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> {{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if($vendors->isEmpty())
+        <!-- Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-shop text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-4 mb-2">No Vendors Yet</h4>
+                <p class="text-muted mb-0">Vendor registrations will appear here.</p>
+            </div>
+        </div>
+    @else
+        <!-- Vendors Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="px-4 py-3" style="width: 80px;">ID</th>
+                                <th class="px-4 py-3">Company Name</th>
+                                <th class="px-4 py-3">Owner</th>
+                                <th class="px-4 py-3">Email</th>
+                                <th class="px-4 py-3 text-center" style="width: 100px;">Products</th>
+                                <th class="px-4 py-3" style="width: 120px;">Status</th>
+                                <th class="px-4 py-3 text-center" style="width: 200px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($vendors as $vendor)
+                                <tr>
+                                    <!-- Vendor ID -->
+                                    <td class="px-4 py-3">
+                                        <span class="badge bg-light text-dark border fw-semibold">
+                                            #{{ $vendor->id }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Company Name -->
+                                    <td class="px-4 py-3">
+                                        <div class="fw-semibold text-dark">{{ $vendor->company_name }}</div>
+                                        @if($vendor->gst_number)
+                                            <small class="text-muted">GST: {{ $vendor->gst_number }}</small>
+                                        @endif
+                                    </td>
+
+                                    <!-- Owner Info -->
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="bi bi-person text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium text-dark">{{ $vendor->user->name ?? 'N/A' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Email -->
+                                    <td class="px-4 py-3">
+                                        <small class="text-muted">{{ $vendor->user->email ?? 'N/A' }}</small>
+                                    </td>
+
+                                    <!-- Products Count -->
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="badge bg-secondary-subtle text-secondary">
+                                            {{ $vendor->products()->count() }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Status Badge -->
+                                    <td class="px-4 py-3">
+                                        @if($vendor->status === 'approved')
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Approved
+                                            </span>
+                                        @elseif($vendor->status === 'pending')
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-clock"></i> Pending
+                                            </span>
+                                        @elseif($vendor->status === 'blocked')
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Blocked
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">
+                                                {{ ucfirst($vendor->status) }}
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- Action Buttons -->
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            @if($vendor->status !== 'approved')
+                                                <form action="{{ route('admin.vendors.approve', $vendor) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-success" title="Approve Vendor">
+                                                        <i class="bi bi-check-lg"></i> Approve
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            
+                                            @if($vendor->status !== 'blocked')
+                                                <form action="{{ route('admin.vendors.block', $vendor) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-danger" title="Block Vendor">
+                                                        <i class="bi bi-x-lg"></i> Block
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            @if($vendor->status === 'blocked')
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-dash-circle"></i> Blocked
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination & Count -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted small">
+                <i class="bi bi-info-circle"></i> 
+                Showing {{ $vendors->firstItem() ?? 0 }} to {{ $vendors->lastItem() ?? 0 }} of {{ $vendors->total() }} vendors
+            </div>
+            <div>
+                {{ $vendors->links() }}
+            </div>
+        </div>
+    @endif
 </div>
 @endsection

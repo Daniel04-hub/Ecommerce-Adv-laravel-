@@ -47,6 +47,42 @@ return [
             'report' => false,
         ],
 
+        // Private storage for sensitive documents
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Invoices (private, customer-specific)
+        'invoices' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/invoices'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Shipping labels (private, vendor/admin access)
+        'shipping' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/shipping'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Warehouse documents (private, admin/vendor access)
+        'warehouse' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/warehouse'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

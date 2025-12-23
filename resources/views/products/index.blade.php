@@ -1,42 +1,110 @@
 @extends('layouts.app')
 
+@section('page-title', 'Shop')
+
 @section('content')
-<h1 class="section-title">Products</h1>
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="page-title mb-2">Our Products</h1>
+        <p class="page-subtitle">Discover our curated collection of quality products</p>
+    </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    @forelse($products as $product)
-        <div class="relative card border border-slate-200">
-            <div class="flex items-start justify-between">
-                <h3 class="font-semibold text-lg mb-2 text-slate-900">
-                    {{ $product->name }}
-                </h3>
-                <span class="text-sm px-2 py-1 rounded bg-green-100 text-green-800">In Stock: {{ $product->stock }}</span>
-            </div>
-
-            <p class="text-red-600 font-bold mb-4 text-xl">
-                ₹{{ $product->price }}
-            </p>
-
-            <div class="mt-2">
-                     <a href="{{ route('products.show', $product) }}"
-                         class="btn-primary gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M15.75 19.5l-6-6 6-6"/></svg>
-                    View Product
-                </a>
-            </div>
-
-            <!-- Full-card click area (kept), container is relative so overlay behaves) -->
-            <a href="{{ route('products.show', $product) }}" class="absolute inset-0" aria-label="Open {{ $product->name }}"></a>
-
-            <!-- Plain text link as fallback for visibility -->
-            <div class="mt-3">
-                <a href="{{ route('products.show', $product) }}" class="btn-link">Open details</a>
+    @if($products->isEmpty())
+        <!-- Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <h4 class="mt-3 mb-2">No Products Available</h4>
+                <p class="text-muted mb-0">Check back soon for exciting new products!</p>
             </div>
         </div>
-    @empty
-        <div class="col-span-full card text-slate-600">
-            No products available yet.
+    @else
+        <!-- Products Grid -->
+        <div class="row g-4">
+            @foreach($products as $product)
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Product Image Container -->
+                        <div class="position-relative overflow-hidden" style="height: 240px; background-color: #f8f9fa;">
+                            @if($product->images->isNotEmpty())
+                                <img src="{{ asset('storage/' . $product->images->first()->path) }}" 
+                                     alt="{{ $product->name }}" 
+                                     class="img-fluid w-100 h-100" 
+                                     style="object-fit: cover; object-position: center;">
+                            @else
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <div class="text-center">
+                                        <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                        <p class="text-muted small mt-2 mb-0">No image</p>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <!-- Stock Badge -->
+                            @if($product->stock <= 0)
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                </div>
+                            @elseif($product->stock < 5)
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-warning">Only {{ $product->stock }} left</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body d-flex flex-column">
+                            <!-- Product Name -->
+                            <h5 class="card-title mb-2">
+                                <a href="{{ route('products.show', $product) }}" class="text-decoration-none text-dark">
+                                    {{ Str::limit($product->name, 50) }}
+                                </a>
+                            </h5>
+
+                            <!-- Product Description -->
+                            @if($product->description)
+                                <p class="card-text text-muted small mb-2">
+                                    {{ Str::limit($product->description, 60) }}
+                                </p>
+                            @endif
+
+                            <!-- Price -->
+                            <p class="card-text mb-3 flex-grow-1">
+                                <span class="h5 text-primary fw-bold">₹{{ number_format($product->price, 2) }}</span>
+                            </p>
+
+                            <!-- Buttons -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('products.show', $product) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                @auth
+                                    <form action="{{ route('cart.add', $product) }}" method="POST" class="w-100">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="btn btn-primary btn-sm w-100" 
+                                                @if($product->stock <= 0) disabled @endif>
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-box-arrow-in-right"></i> Login to Order
+                                    </a>
+                                @endauth
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-    @endforelse
+
+        <!-- Products Count -->
+        <div class="mt-4 text-center text-muted small">
+            <i class="bi bi-info-circle"></i> 
+            Showing {{ $products->count() }} {{ Str::plural('product', $products->count()) }}
+        </div>
+    @endif
 </div>
 @endsection
