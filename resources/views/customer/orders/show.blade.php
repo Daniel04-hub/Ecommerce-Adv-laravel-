@@ -3,6 +3,12 @@
 @section('page-title', 'Order Details')
 
 @section('content')
+
+@include('components.order-status-listener', [
+    'orderId' => $order->id,
+    'userId' => auth()->id(),
+    'isVendor' => false
+])
 <div class="py-4">
     <!-- Page Header -->
     <div class="mb-4">
@@ -165,14 +171,18 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <strong class="d-block mb-2">{{ $order->full_name ?? 'Not provided' }}</strong>
-                    <small class="d-block text-muted mb-2">{{ $order->address ?? 'No address' }}</small>
-                    <small class="d-block text-muted mb-3">
-                        <i class="bi bi-telephone"></i> {{ $order->phone ?? 'No phone' }}
-                    </small>
-                    <small class="d-block text-muted">
-                        <i class="bi bi-envelope"></i> {{ $order->email ?? 'No email' }}
-                    </small>
+                    <div class="mb-3">
+                        <strong>{{ $order->full_name ?? 'Not provided' }}</strong>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">{{ $order->address ?? 'No address' }}</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="bi bi-telephone"></i> {{ $order->phone ?? 'No phone' }}</small>
+                    </div>
+                    <div>
+                        <small class="text-muted"><i class="bi bi-envelope"></i> {{ $order->email ?? 'No email' }}</small>
+                    </div>
                 </div>
             </div>
 
@@ -312,8 +322,8 @@
                 <p class="text-muted">Create a secure, temporary link to share your invoice with others.</p>
                 
                 <div class="mb-3">
-                    <label for="expiryTime" class="form-label">Link Expires In:</label>
-                    <select class="form-select" id="expiryTime">
+                    <label for="linkExpirySelect" class="form-label">Link Expires In:</label>
+                    <select class="form-select" id="linkExpirySelect">
                         <option value="60">1 Hour</option>
                         <option value="360">6 Hours</option>
                         <option value="720">12 Hours</option>
@@ -332,7 +342,7 @@
                         </button>
                     </div>
                     <small class="text-muted">
-                        <i class="bi bi-clock"></i> Expires: <span id="expiryTime"></span>
+                        <i class="bi bi-clock"></i> Expires: <span id="expiryDisplay"></span>
                     </small>
                 </div>
             </div>
@@ -350,23 +360,53 @@
 document.getElementById('generateLinkBtn').addEventListener('click', function() {
     const btn = this;
     const orderId = {{ $order->id }};
-    const expiresIn = document.getElementById('expiryTime').value;
+    const expiresIn = parseInt(document.getElementById('linkExpirySelect').value);
     
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
     
-    // Generate signed URL via API (you can create an API endpoint for this)
-    const url = @json(\App\Services\SignedUrlService::generateInvoiceUrl($order->id, 60));
-    
-    setTimeout(() => {
-        document.getElementById('generatedLink').value = url;
+    // Generate signed URL via API endpoint
+    fetch(`/customer/orders/${orderId}/generate-signed-invoice-url`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            expires_in: expiresIn
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.url) {
+            throw new Error('No URL in response');
+        }
+        document.getElementById('generatedLink').value = data.url;
         document.getElementById('generatedLinkContainer').classList.remove('d-none');
-        document.getElementById('expiryTime').textContent = new Date(Date.now() + (expiresIn * 60000)).toLocaleString();
+        document.getElementById('expiryDisplay').textContent = new Date(data.expires_at).toLocaleString();
         
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-check"></i> Generated';
         btn.classList.replace('btn-primary', 'btn-success');
-    }, 500);
+        
+        // Reset button after 3 seconds
+        setTimeout(() => {
+            btn.innerHTML = '<i class="bi bi-link-45deg"></i> Generate Link';
+            btn.classList.replace('btn-success', 'btn-primary');
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to generate link. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-link-45deg"></i> Generate Link';
+    });
 });
 
 function copyToClipboard() {
@@ -386,4 +426,5 @@ function copyToClipboard() {
     }, 2000);
 }
 </script>
+
 @endsection
