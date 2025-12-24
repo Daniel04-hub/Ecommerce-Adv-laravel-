@@ -113,6 +113,37 @@ class OtpLoginController extends Controller
 
     /**
      * Resend OTP
+     * 
+     * @OA\Post(
+     *     path="/login/otp/resend",
+     *     tags={"OTP Authentication"},
+     *     summary="Resend OTP for login",
+     *     description="Request a new OTP if the previous one expired or was not received",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="customer@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="New OTP sent successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="New OTP sent to your email."),
+     *             @OA\Property(property="expires_in", type="integer", example=300, description="Expiry time in seconds")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Failed to send OTP",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Failed to send OTP.")
+     *         )
+     *     )
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

@@ -22,13 +22,12 @@ Broadcast::channel('orders.customer.{userId}', function ($user, $userId) {
 
 // Vendor can listen to their orders
 Broadcast::channel('orders.vendor.{vendorId}', function ($user, $vendorId) {
-    if (!$user->hasRole('vendor')) {
+    $isVendor = (method_exists($user, 'hasRole') ? $user->hasRole('vendor') : (($user->role ?? null) === 'vendor'));
+    if (! $isVendor) {
         return false;
     }
-    
-    // Verify vendor owns this vendor_id (if you have vendor_id on users)
-    // Adjust based on your vendor relationship
-    return true;
+
+    return (int)($user->vendor_id ?? 0) === (int)$vendorId;
 });
 
 // Presence channel example for vendor dashboard (multiple vendors watching same order)

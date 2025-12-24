@@ -98,6 +98,10 @@ class PaymentController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'status' => 'placed',
+                    'full_name' => $checkout['name'] ?? Auth::user()->name,
+                    'email' => $checkout['email'] ?? Auth::user()->email,
+                    'phone' => $checkout['phone'] ?? null,
+                    'address' => $checkout['address'] ?? null,
                 ]);
 
                 // Reduce product stock

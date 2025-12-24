@@ -3,12 +3,60 @@
 @section('page-title', 'Orders')
 
 @section('content')
+
+@include('components.order-status-listener', [
+    'orderId' => request('order_id'),
+    'userId' => auth()->id(),
+    'isVendor' => true
+])
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1">Orders</h2>
             <p class="text-muted mb-0">Manage and track your customer orders</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('vendor.orders.index') }}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted" for="q">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="q" name="q" value="{{ request('q') }}" class="form-control" placeholder="Customer or Product name">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted" for="status">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">All</option>
+                        @foreach(['placed','accepted','shipped','completed','cancelled'] as $s)
+                            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                                {{ ucfirst($s) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted" for="from">From</label>
+                    <input type="date" id="from" name="from" value="{{ request('from') }}" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted" for="to">To</label>
+                    <input type="date" id="to" name="to" value="{{ request('to') }}" class="form-control">
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                </div>
+                <div class="col-md-12">
+                    <a href="{{ route('vendor.orders.index') }}" class="text-muted small text-decoration-none">
+                        <i class="bi bi-x-circle"></i> Reset filters
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -157,6 +205,9 @@
         <div class="mt-3 text-muted small">
             <i class="bi bi-info-circle"></i> 
             Showing {{ $orders->count() }} {{ Str::plural('order', $orders->count()) }}
+            @if(request()->hasAny(['q','status','from','to']))
+                <span class="ms-2">(filtered)</span>
+            @endif
         </div>
     @endif
 </div>

@@ -160,6 +160,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:customer')
         ->name('customer.orders.invoice.view');
 
+    // Generate Temporary Signed URLs (API endpoints)
+    Route::post('/customer/orders/{order}/generate-signed-invoice-url', [\App\Http\Controllers\Api\SignedUrlGeneratorController::class, 'generateInvoiceUrl'])
+        ->middleware('role:customer')
+        ->name('customer.orders.generate-signed-invoice-url');
+
     /*
     |--------------------------------------------------------------------------
     | Vendor Routes
@@ -203,6 +208,10 @@ Route::middleware('auth')->group(function () {
         // Admin Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])
             ->name('dashboard');
+
+        // Admin Users Management
+        Route::get('/users', [\App\Http\Controllers\Admin\UserManagementController::class, 'index'])
+            ->name('users.index');
 
         Route::get('/products/pending', [ProductApprovalController::class, 'index'])
             ->name('products.pending');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Jobs\SendLoginAlertEmailJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +32,12 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         // ✅ Vendor login
-        if ($user && $user->role === 'vendor') {
+        if ($this->userHasRole($user, 'vendor')) {
             return redirect()->intended(route('vendor.dashboard'));
         }
 
         // ✅ Admin login
-        if ($user && $user->role === 'admin') {
+        if ($this->userHasRole($user, 'admin')) {
             return redirect()->intended(route('admin.products.pending'));
         }
 
@@ -56,5 +57,22 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function userHasRole($user, string $role): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        try {
+            if (method_exists($user, 'hasRole') && $user->hasRole($role)) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            // Fallback below
+        }
+
+        return ($user->role ?? null) === $role;
     }
 }

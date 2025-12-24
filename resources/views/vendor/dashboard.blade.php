@@ -86,6 +86,73 @@
         </div>
     </div>
 
+    <!-- Extended KPI Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Low Stock -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Low Stock (≤5)</p>
+                            <h2 class="mb-0 fw-bold text-warning">{{ $lowStockCount ?? 0 }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-exclamation-triangle text-warning fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ route('vendor.products.index') }}" class="text-warning text-decoration-none small">
+                            Restock items <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivered Orders -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Delivered Orders</p>
+                            <h2 class="mb-0 fw-bold text-success">{{ $deliveredOrdersCount ?? 0 }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-check-circle text-success fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ route('vendor.orders.index') }}" class="text-success text-decoration-none small">
+                            View delivered <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Today -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Revenue Today</p>
+                            <h2 class="mb-0 fw-bold">₹{{ number_format($revenueToday ?? 0, 2) }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-currency-rupee text-primary fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-muted small">30-day: ₹{{ number_format($revenue30Days ?? 0, 2) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Orders by Status -->
     <div class="row">
         <div class="col-lg-6">
@@ -171,6 +238,27 @@
                                 <small class="text-muted">Check and manage orders</small>
                             </div>
                         </a>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="alert alert-light border d-flex align-items-center mb-0">
+                                    <i class="bi bi-graph-up-arrow me-2 text-primary"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Orders This Week</div>
+                                        <div class="small text-muted">{{ $ordersThisWeek ?? 0 }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="alert alert-light border d-flex align-items-center mb-0">
+                                    <i class="bi bi-hourglass-split me-2 text-warning"></i>
+                                    <div>
+                                        <div class="fw-semibold small">In Progress</div>
+                                        <div class="small text-muted">{{ $inProgressOrdersCount ?? 0 }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

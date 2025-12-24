@@ -12,6 +12,31 @@ class CodVerificationController extends Controller
 {
     /**
      * Generate COD verification OTP for order
+     * 
+     * @OA\Post(
+     *     path="/orders/{order}/cod/generate-otp",
+     *     tags={"COD Verification"},
+     *     summary="Generate COD verification OTP",
+     *     description="Customer generates OTP for delivery person to verify COD payment",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="OTP sent successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="COD verification OTP sent to your email and phone.")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=400, description="Invalid order status or not COD")
+     * )
      *
      * @param Order $order
      * @return \Illuminate\Http\RedirectResponse
@@ -51,6 +76,42 @@ class CodVerificationController extends Controller
 
     /**
      * Verify COD OTP (called by delivery person)
+     * 
+     * @OA\Post(
+     *     path="/cod/verify",
+     *     tags={"COD Verification"},
+     *     summary="Verify COD OTP and mark order as delivered",
+     *     description="Delivery person verifies OTP to confirm COD payment received",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"order_id", "otp"},
+     *             @OA\Property(property="order_id", type="integer", example=1),
+     *             @OA\Property(property="otp", type="string", example="123456")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="OTP verified successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="COD order verified successfully."),
+     *             @OA\Property(property="order", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="status", type="string", example="delivered"),
+     *                 @OA\Property(property="delivered_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid or expired OTP",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Invalid or expired OTP.")
+     *         )
+     *     )
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -103,6 +164,32 @@ class CodVerificationController extends Controller
 
     /**
      * Check OTP status
+     * 
+     * @OA\Get(
+     *     path="/orders/{order}/cod/status",
+     *     tags={"COD Verification"},
+     *     summary="Check COD OTP status",
+     *     description="Customer checks if OTP is still active and valid",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="OTP status retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="exists", type="boolean", example=true),
+     *             @OA\Property(property="remaining_seconds", type="integer", example=240),
+     *             @OA\Property(property="remaining_formatted", type="string", example="4 minutes"),
+     *             @OA\Property(property="attempts", type="integer", example=0)
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Unauthorized")
+     * )
      *
      * @param Order $order
      * @return \Illuminate\Http\JsonResponse

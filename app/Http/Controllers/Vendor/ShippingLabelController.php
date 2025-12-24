@@ -13,6 +13,18 @@ class ShippingLabelController extends Controller
 {
     /**
      * Download shipping label for vendor's order
+    * 
+    * @OA\Get(
+    *     path="/vendor/orders/{order}/shipping-label/download",
+    *     tags={"Vendor"},
+    *     summary="Download shipping label",
+    *     description="Vendor downloads shipping label for their order.",
+    *     security={{"sanctum":{}}},
+    *     @OA\Parameter(name="order", in="path", required=true, @OA\Schema(type="integer")),
+    *     @OA\Response(response=200, description="File download"),
+    *     @OA\Response(response=404, description="Label not found"),
+    *     @OA\Response(response=403, description="Unauthorized")
+    * )
      *
      * @param Order $order
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
@@ -40,6 +52,18 @@ class ShippingLabelController extends Controller
 
     /**
      * View shipping label in browser
+        * 
+        * @OA\Get(
+        *     path="/vendor/orders/{order}/shipping-label",
+        *     tags={"Vendor"},
+        *     summary="View shipping label",
+        *     description="Vendor views shipping label in browser.",
+        *     security={{"sanctum":{}}},
+        *     @OA\Parameter(name="order", in="path", required=true, @OA\Schema(type="integer")),
+        *     @OA\Response(response=200, description="HTML content"),
+        *     @OA\Response(response=404, description="Label not found"),
+        *     @OA\Response(response=403, description="Unauthorized")
+        * )
      *
      * @param Order $order
      * @return \Illuminate\Http\Response
@@ -65,6 +89,17 @@ class ShippingLabelController extends Controller
 
     /**
      * Generate shipping label for order
+        * 
+        * @OA\Post(
+        *     path="/vendor/orders/{order}/shipping-label/generate",
+        *     tags={"Vendor"},
+        *     summary="Generate shipping label",
+        *     description="Vendor generates shipping label for an order.",
+        *     security={{"sanctum":{}}},
+        *     @OA\Parameter(name="order", in="path", required=true, @OA\Schema(type="integer")),
+        *     @OA\Response(response=302, description="Redirect back with success"),
+        *     @OA\Response(response=403, description="Unauthorized")
+        * )
      *
      * @param Order $order
      * @return \Illuminate\Http\RedirectResponse

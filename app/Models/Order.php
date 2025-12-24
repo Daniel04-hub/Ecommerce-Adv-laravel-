@@ -23,6 +23,10 @@ class Order extends Model
         'quantity',
         'price',
         'status',
+        'full_name',
+        'email',
+        'phone',
+        'address',
     ];
 
     // Allowed forward-only transitions
@@ -47,6 +51,12 @@ class Order extends Model
     }
 
     public function customer()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Alias for customer() - commonly used as 'user' in queries
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

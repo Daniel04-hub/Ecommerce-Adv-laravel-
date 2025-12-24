@@ -1,62 +1,54 @@
 <!-- 
     Broadcasting Listener for Real-time Order Status Updates
-    
-    Usage:
-    @include('components.order-status-listener', [
-        'orderId' => $order->id,
-        'userId' => auth()->id(),
-        'isVendor' => auth()->user()->hasRole('vendor')
-    ])
-    
-    This component:
-    - Connects to Laravel Echo
-    - Listens for order status changes
-    - Shows toast notifications
-    - Updates UI in real-time
 -->
-
-<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.1/dist/echo.iife.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Echo for broadcasting
-        window.Echo = new Echo({
-            broadcaster: 'reverb',
-            key: @json(env('REVERB_APP_KEY')),
-            wsHost: @json(env('REVERB_HOST')),
-            wsPort: @json(env('REVERB_PORT')),
-            wssPort: @json(env('REVERB_PORT')),
-            forceTLS: false,
-            enabledTransports: ['ws', 'wss'],
-            auth: {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        if (!window.Echo) {
+            console.warn('Echo not initialized');
+            return;
+        }
+
+        @php
+            $safeUserId = $userId ?? null;
+            $safeOrderId = $orderId ?? null;
+            $safeIsVendor = $isVendor ?? false;
+            $safeVendorId = null;
+            
+            if ($safeIsVendor && auth()->check()) {
+                try {
+                    $user = auth()->user();
+                    $safeVendorId = $user->vendor_id ?? null;
+                } catch (\Exception $e) {
+                    $safeVendorId = null;
                 }
             }
-        });
+        @endphp
 
-        const userId = @json($userId ?? auth()->id());
-        const isVendor = @json($isVendor ?? false);
-        const orderId = @json($orderId ?? null);
+        const userId = {{ $safeUserId ?? 'null' }};
+        const isVendor = {{ $safeIsVendor ? 'true' : 'false' }};
+        const orderId = {{ $safeOrderId ?? 'null' }};
+        const vendorId = {{ $safeVendorId ?? 'null' }};
 
         if (!userId || !orderId) return;
 
         // Customer listening to their orders
         if (!isVendor) {
             window.Echo.private(`orders.customer.${userId}`)
-                .listen('OrderStatusUpdated', (event) => {
-                    if (event.id === orderId) {
+                .listen('.order.status-updated', (event) => {
+                    const id = event.id ?? event.orderId;
+                    if (id === orderId) {
                         handleOrderStatusUpdate(event);
                     }
                 });
         }
 
         // Vendor listening to their orders
-        if (isVendor) {
-            window.Echo.private(`orders.vendor.{{ auth()->user()->vendor_id ?? 'unknown' }}`)
-                .listen('OrderStatusUpdated', (event) => {
-                    if (event.id === orderId) {
+        if (isVendor && vendorId) {
+            window.Echo.private(`orders.vendor.${vendorId}`)
+                .listen('.order.status-updated', (event) => {
+                    const id = event.id ?? event.orderId;
+                    if (id === orderId) {
                         handleOrderStatusUpdate(event);
                     }
                 });
@@ -71,11 +63,15 @@
             // Update order status in DOM
             const statusEl = document.querySelector(`[data-order-status="${orderId}"]`);
             if (statusEl) {
-                updateStatusBadge(statusEl, event.status);
+                const status = event.status ?? event.newStatus ?? 'updated';
+                updateStatusBadge(statusEl, status);
             }
 
             // Update any status timeline/progress
-            updateOrderTimeline(event.status);
+            {
+                const status = event.status ?? event.newStatus ?? 'updated';
+                updateOrderTimeline(status);
+            }
         }
 
         function showNotification(event) {
@@ -86,7 +82,8 @@
                 'completed': '🎉 Order Delivered'
             };
 
-            const message = messages[event.status] || `Order Status: ${event.status}`;
+            const status = event.status ?? event.newStatus ?? 'updated';
+            const message = messages[status] || `Order Status: ${status}`;
             
             // Bootstrap Toast
             const toastHtml = `

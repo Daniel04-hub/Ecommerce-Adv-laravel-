@@ -12,13 +12,55 @@
         </div>
     </div>
 
+    <!-- Search & Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form action="{{ route('admin.orders.index') }}" method="GET" class="row g-3">
+                <!-- Search Input -->
+                <div class="col-md-6">
+                    <label for="search" class="form-label small fw-semibold text-muted">Search Orders</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="search" name="search" 
+                               placeholder="Search by order ID or customer email..." value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-4">
+                    <label for="status" class="form-label small fw-semibold text-muted">Filter by Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="placed" {{ request('status') === 'placed' ? 'selected' : '' }}>Placed</option>
+                        <option value="accepted" {{ request('status') === 'accepted' ? 'selected' : '' }}>Accepted</option>
+                        <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
+                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if($orders->isEmpty())
         <!-- Empty State -->
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
                 <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-4 mb-2">No Orders Yet</h4>
-                <p class="text-muted mb-0">Customer orders will appear here once purchases are made.</p>
+                <h4 class="mt-4 mb-2">No Orders Found</h4>
+                <p class="text-muted mb-0">No orders match your search criteria.</p>
             </div>
         </div>
     @else

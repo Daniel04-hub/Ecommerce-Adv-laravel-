@@ -19,13 +19,53 @@
         </div>
     @endif
 
+    <!-- Search & Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form action="{{ route('admin.vendors.index') }}" method="GET" class="row g-3">
+                <!-- Search Input -->
+                <div class="col-md-6">
+                    <label for="search" class="form-label small fw-semibold text-muted">Search Vendor</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="search" name="search" 
+                               placeholder="Search by company name or email..." value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-4">
+                    <label for="status" class="form-label small fw-semibold text-muted">Filter by Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Blocked</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <a href="{{ route('admin.vendors.index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if($vendors->isEmpty())
         <!-- Empty State -->
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
                 <i class="bi bi-shop text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-4 mb-2">No Vendors Yet</h4>
-                <p class="text-muted mb-0">Vendor registrations will appear here.</p>
+                <h4 class="mt-4 mb-2">No Vendors Found</h4>
+                <p class="text-muted mb-0">No vendors match your search criteria.</p>
             </div>
         </div>
     @else

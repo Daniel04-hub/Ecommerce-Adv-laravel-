@@ -4,12 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductApprovalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::where('status', 'pending')->latest()->get();
+        $query = Product::where('status', 'pending')->with(['vendor', 'images']);
+
+        // Search by product name
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+
+        // Filter by vendor
+        if ($request->filled('vendor_id')) {
+            $query->where('vendor_id', $request->get('vendor_id'));
+        }
+
+        $products = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.products.pending', compact('products'));
     }

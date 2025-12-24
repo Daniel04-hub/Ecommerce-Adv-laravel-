@@ -19,6 +19,51 @@
         </div>
     @endif
 
+    <!-- Search & Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form action="{{ route('admin.products.pending') }}" method="GET" class="row g-3">
+                <!-- Search Input -->
+                <div class="col-md-6">
+                    <label for="search" class="form-label small fw-semibold text-muted">Search Product</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="search" name="search" 
+                               placeholder="Search by product name..." value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                <!-- Vendor Filter -->
+                <div class="col-md-4">
+                    <label for="vendor_id" class="form-label small fw-semibold text-muted">Filter by Vendor</label>
+                    <select class="form-select" id="vendor_id" name="vendor_id">
+                        <option value="">All Vendors</option>
+                        @php
+                            $vendors = App\Models\Vendor::where('status', 'approved')->get();
+                        @endphp
+                        @foreach($vendors as $vendor)
+                            <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>
+                                {{ $vendor->company_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <a href="{{ route('admin.products.pending') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if($products->isEmpty())
         <!-- Empty State -->
         <div class="card border-0 shadow-sm">
@@ -155,10 +200,15 @@
             </div>
         </div>
 
-        <!-- Products Count -->
-        <div class="mt-3 text-muted small">
-            <i class="bi bi-info-circle"></i> 
-            Showing {{ $products->count() }} pending {{ Str::plural('product', $products->count()) }}
+        <!-- Pagination & Count -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted small">
+                <i class="bi bi-info-circle"></i> 
+                Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} pending {{ Str::plural('product', $products->total()) }}
+            </div>
+            <div>
+                {{ $products->links() }}
+            </div>
         </div>
     @endif
 </div>

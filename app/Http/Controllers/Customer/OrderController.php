@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\Order;
-use App\Jobs\VerifyPaymentJob;
+use App\Events\OrderPlaced;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -69,14 +69,9 @@ class OrderController extends Controller
                     'status'     => 'placed',
                 ]);
 
-                // ✅ DIRECT JOB DISPATCH AFTER COMMIT (NO EVENTS)
+                // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)
                 DB::afterCommit(function () use ($order) {
-                    Log::info('VerifyPaymentJob DISPATCHED DIRECTLY', [
-                        'order_id' => $order->id,
-                    ]);
-
-                    VerifyPaymentJob::dispatch($order->id)
-                        ->onQueue(config('queues.payment'));
+                    OrderPlaced::dispatch($order->id);
                 });
             });
 
@@ -126,14 +121,9 @@ class OrderController extends Controller
                     'status'     => 'placed',
                 ]);
 
-                // ✅ DIRECT JOB DISPATCH AFTER COMMIT (NO EVENTS)
+                // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)
                 DB::afterCommit(function () use ($order) {
-                    Log::info('VerifyPaymentJob DISPATCHED DIRECTLY', [
-                        'order_id' => $order->id,
-                    ]);
-
-                    VerifyPaymentJob::dispatch($order->id)
-                        ->onQueue(config('queues.payment'));
+                    OrderPlaced::dispatch($order->id);
                 });
             });
 

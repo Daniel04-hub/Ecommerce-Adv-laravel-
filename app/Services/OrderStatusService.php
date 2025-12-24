@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 
 class OrderStatusService
@@ -21,13 +20,8 @@ class OrderStatusService
             return false;
         }
 
-        $previousStatus = $order->status;
-
-        // Update status
+        // Update status only; observer will emit events as needed
         $order->update(['status' => $newStatus]);
-
-        // Broadcast the status change
-        OrderStatusUpdated::dispatch($order, $previousStatus, $newStatus);
 
         return true;
     }

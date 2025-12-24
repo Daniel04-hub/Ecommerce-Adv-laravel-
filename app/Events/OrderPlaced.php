@@ -1,7 +1,5 @@
 <?php
 
-// app/Events/OrderPlaced.php
-
 namespace App\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;

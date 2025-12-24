@@ -19,7 +19,7 @@ class LoginAlertMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Login Alert')
+        return $this->subject('New Login Alert')
             ->view('emails.login_alert')
             ->with($this->data);
     }

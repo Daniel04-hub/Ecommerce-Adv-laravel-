@@ -7,7 +7,42 @@
     <!-- Page Header -->
     <div class="mb-4">
         <h1 class="page-title mb-2">Secure Checkout</h1>
-        <p class="page-subtitle">Complete your purchase</p>
+        <p class="page-subtitle">Complete your purchase securely</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-cart-check"></i>
+                        </div>
+                        <small class="text-muted">Cart</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <small class="fw-semibold">Checkout</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <small class="text-muted">Confirmation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Validation Errors -->
@@ -36,22 +71,22 @@
 
                 <!-- Delivery Information Section -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-light border-bottom">
+                    <div class="card-header bg-primary bg-opacity-10 border-bottom border-primary border-opacity-25">
                         <div class="d-flex align-items-center gap-2 py-3">
-                            <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">1</span>
+                            <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">1</span>
                             <h5 class="mb-0">Delivery Information</h5>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label for="full_name" class="form-label fw-medium">Full Name</label>
+                                <label for="full_name" class="form-label fw-semibold">Full Name</label>
                                 <input type="text" 
                                        class="form-control form-control-lg @error('full_name') is-invalid @enderror" 
                                        id="full_name" 
                                        name="full_name" 
                                        value="{{ old('full_name', $name) }}"
-                                       placeholder="Enter your full name"
+                                       placeholder="John Doe"
                                        required>
                                 @error('full_name')
                                     <div class="invalid-feedback d-block">
@@ -61,13 +96,13 @@
                             </div>
 
                             <div class="col-12 col-md-6">
-                                <label for="email" class="form-label fw-medium">Email Address</label>
+                                <label for="email" class="form-label fw-semibold">Email Address</label>
                                 <input type="email" 
                                        class="form-control form-control-lg @error('email') is-invalid @enderror" 
                                        id="email" 
                                        name="email" 
                                        value="{{ old('email', $email) }}"
-                                       placeholder="you@example.com"
+                                       placeholder="john@example.com"
                                        required>
                                 @error('email')
                                     <div class="invalid-feedback d-block">
@@ -77,13 +112,13 @@
                             </div>
 
                             <div class="col-12 col-md-6">
-                                <label for="phone" class="form-label fw-medium">Phone Number</label>
+                                <label for="phone" class="form-label fw-semibold">Phone Number</label>
                                 <input type="tel" 
                                        class="form-control form-control-lg @error('phone') is-invalid @enderror" 
                                        id="phone" 
                                        name="phone" 
                                        value="{{ old('phone') }}"
-                                       placeholder="10-digit mobile number"
+                                       placeholder="9876543210"
                                        required>
                                 @error('phone')
                                     <div class="invalid-feedback d-block">
@@ -93,13 +128,14 @@
                             </div>
 
                             <div class="col-12">
-                                <label for="address" class="form-label fw-medium">Delivery Address</label>
+                                <label for="address" class="form-label fw-semibold">Delivery Address</label>
                                 <textarea class="form-control @error('address') is-invalid @enderror" 
                                           id="address" 
                                           name="address" 
-                                          rows="4"
-                                          placeholder="Street Address, Apartment, Suite, etc."
+                                          rows="3"
+                                          placeholder="Enter your complete address..."
                                           required>{{ old('address') }}</textarea>
+                                <small class="text-muted d-block mt-1">Include street name, house number, and landmark if possible</small>
                                 @error('address')
                                     <div class="invalid-feedback d-block">
                                         <i class="bi bi-exclamation-circle"></i> {{ $message }}
@@ -112,52 +148,60 @@
 
                 <!-- Payment Method Section -->
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-light border-bottom">
+                    <div class="card-header bg-primary bg-opacity-10 border-bottom border-primary border-opacity-25">
                         <div class="d-flex align-items-center gap-2 py-3">
-                            <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">2</span>
-                            <h5 class="mb-0">Select Payment Method</h5>
+                            <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">2</span>
+                            <h5 class="mb-0">Payment Method</h5>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="payment-methods">
+                        <div class="row g-3">
                             <!-- Cash on Delivery Option -->
-                            <div class="form-check payment-option p-3 mb-3 border rounded-2" style="cursor: pointer;">
-                                <input class="form-check-input" 
-                                       type="radio" 
-                                       name="payment_method" 
-                                       id="cod" 
-                                       value="cod"
-                                       {{ old('payment_method') === 'cod' ? 'checked' : '' }}>
-                                <label class="form-check-label w-100 cursor-pointer" for="cod">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <div class="fw-bold mb-1">
-                                                <i class="bi bi-cash-coin text-success"></i> Cash on Delivery (COD)
+                            <div class="col-12">
+                                <div class="payment-option card border p-3" style="cursor: pointer; transition: all 0.3s ease;">
+                                    <input class="form-check-input" 
+                                           type="radio" 
+                                           name="payment_method" 
+                                           id="cod" 
+                                           value="cod"
+                                           {{ old('payment_method') === 'cod' ? 'checked' : '' }}
+                                           onchange="updatePaymentOption(this)">
+                                    <label class="form-check-label w-100" for="cod" style="cursor: pointer;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-bold mb-1">
+                                                    <i class="bi bi-cash-coin text-success"></i> Cash on Delivery (COD)
+                                                </div>
+                                                <p class="text-muted small mb-0">Pay safely when you receive your order. No hidden charges.</p>
                                             </div>
-                                            <p class="text-muted small mb-0">Pay when you receive your order. No charges added.</p>
+                                            <span class="badge bg-success ms-2">Popular</span>
                                         </div>
-                                    </div>
-                                </label>
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- Online Payment Option -->
-                            <div class="form-check payment-option p-3 border rounded-2" style="cursor: pointer;">
-                                <input class="form-check-input" 
-                                       type="radio" 
-                                       name="payment_method" 
-                                       id="mock_payment" 
-                                       value="mock_payment"
-                                       {{ old('payment_method') === 'mock_payment' ? 'checked' : '' }}>
-                                <label class="form-check-label w-100 cursor-pointer" for="mock_payment">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <div class="fw-bold mb-1">
-                                                <i class="bi bi-credit-card text-info"></i> Online Payment (Demo)
+                            <div class="col-12">
+                                <div class="payment-option card border p-3" style="cursor: pointer; transition: all 0.3s ease;">
+                                    <input class="form-check-input" 
+                                           type="radio" 
+                                           name="payment_method" 
+                                           id="mock_payment" 
+                                           value="mock_payment"
+                                           {{ old('payment_method') === 'mock_payment' ? 'checked' : '' }}
+                                           onchange="updatePaymentOption(this)">
+                                    <label class="form-check-label w-100" for="mock_payment" style="cursor: pointer;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-bold mb-1">
+                                                    <i class="bi bi-credit-card text-info"></i> Online Payment (Demo)
+                                                </div>
+                                                <p class="text-muted small mb-0">Pay now securely. Instant order confirmation.</p>
                                             </div>
-                                            <p class="text-muted small mb-0">Pay now securely with our demo payment gateway. Instant confirmation.</p>
+                                            <span class="badge bg-info ms-2">Instant</span>
                                         </div>
-                                    </div>
-                                </label>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -194,7 +238,9 @@
                 <div class="card-body">
                     <!-- Items List -->
                     <div class="mb-4">
-                        <h6 class="mb-3 text-muted">Items</h6>
+                        <h6 class="mb-3 text-muted fw-semibold">
+                            <i class="bi bi-bag"></i> Items ({{ count($cart) }})
+                        </h6>
                         <div style="max-height: 350px; overflow-y: auto;">
                             @foreach($cart as $item)
                                 <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom">
@@ -217,7 +263,7 @@
                         </div>
                     </div>
 
-                    <hr>
+                    <hr class="my-3">
 
                     <!-- Pricing Breakdown -->
                     <div class="mb-4">
@@ -230,12 +276,14 @@
                             <span class="text-muted">
                                 <i class="bi bi-truck"></i> Shipping
                             </span>
-                            <span class="badge bg-success">FREE</span>
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> FREE</span>
                         </div>
 
                         <div class="d-flex justify-content-between pb-3 mb-3 border-bottom">
-                            <span class="text-muted">Tax (incl.)</span>
-                            <span class="text-muted">Included</span>
+                            <span class="text-muted">
+                                <i class="bi bi-receipt"></i> Tax (incl.)
+                            </span>
+                            <span class="small text-muted">Included</span>
                         </div>
 
                         <!-- Total Amount -->
@@ -249,11 +297,27 @@
                         </div>
                     </div>
 
+                    <!-- Security & Benefits -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                <i class="bi bi-shield-check text-primary" style="font-size: 1.2rem;"></i>
+                                <small>Secure</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                <i class="bi bi-arrow-repeat text-primary" style="font-size: 1.2rem;"></i>
+                                <small>Easy Return</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Security Badge -->
                     <div class="alert alert-light border-0 py-2 px-3 mb-0">
                         <small class="text-muted d-flex align-items-center gap-2">
-                            <i class="bi bi-shield-check text-success"></i> 
-                            Secure SSL encrypted checkout
+                            <i class="bi bi-lock-fill"></i> 
+                            SSL encrypted checkout
                         </small>
                     </div>
                 </div>
@@ -261,6 +325,32 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updatePaymentOption(radio) {
+        // Remove active state from all options
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.classList.remove('border-primary', 'bg-primary', 'bg-opacity-5');
+            option.style.borderColor = '';
+        });
+        
+        // Add active state to selected option
+        const parent = radio.closest('.payment-option');
+        if (parent) {
+            parent.classList.add('border-primary');
+            parent.style.borderColor = '#0d6efd';
+            parent.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+        }
+    }
+    
+    // Initialize payment options on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+        if (checkedRadio) {
+            updatePaymentOption(checkedRadio);
+        }
+    });
+</script>
 
 <style>
     .payment-option {
@@ -270,16 +360,11 @@
     
     .payment-option:hover {
         background-color: #f8f9fa;
-        border-color: #0d6efd !important;
     }
     
-    .payment-option input[type="radio"]:checked ~ label {
-        color: inherit;
-    }
-    
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+    .form-control-lg, .form-select-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
     }
 </style>
 @endsection

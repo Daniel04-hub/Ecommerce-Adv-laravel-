@@ -10,6 +10,43 @@
         <p class="page-subtitle">Review your items before checkout</p>
     </div>
 
+    <!-- Progress Steps -->
+    @if(!empty($cart))
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-cart-check"></i>
+                            </div>
+                            <small class="fw-semibold">Cart</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                            <small class="text-muted">Checkout</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <small class="text-muted">Complete</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
             <i class="bi bi-check-circle"></i> {{ session('success') }}
@@ -23,9 +60,9 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-cart-x text-muted" style="font-size: 3rem;"></i>
                 <h4 class="mt-4 mb-2">Your Cart is Empty</h4>
-                <p class="text-muted mb-4">Add some products to get started!</p>
-                <a href="{{ route('products.index') }}" class="btn btn-primary">
-                    <i class="bi bi-shop"></i> Continue Shopping
+                <p class="text-muted mb-4">Discover amazing products and add them to your cart!</p>
+                <a href="{{ route('products.index') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-shop"></i> Start Shopping
                 </a>
             </div>
         </div>
@@ -33,7 +70,7 @@
         <div class="row g-4">
             <!-- Cart Items Section -->
             <div class="col-12 col-lg-8">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
@@ -41,8 +78,8 @@
                                     <tr>
                                         <th class="px-4 py-3">Product</th>
                                         <th class="px-4 py-3 text-end" style="width: 100px;">Price</th>
-                                        <th class="px-4 py-3 text-center" style="width: 120px;">Quantity</th>
-                                        <th class="px-4 py-3 text-end" style="width: 120px;">Subtotal</th>
+                                        <th class="px-4 py-3 text-center" style="width: 140px;">Quantity</th>
+                                        <th class="px-4 py-3 text-end" style="width: 130px;">Subtotal</th>
                                         <th class="px-4 py-3 text-center" style="width: 80px;">Action</th>
                                     </tr>
                                 </thead>
@@ -68,7 +105,7 @@
                                                             {{ Str::limit($item['product']->name, 40) }}
                                                         </a>
                                                         <br>
-                                                        <small class="text-muted">SKU: #{{ $item['product']->id }}</small>
+                                                        <small class="text-muted">by {{ Str::limit($item['product']->vendor->company_name, 20) }}</small>
                                                     </div>
                                                 </div>
                                             </td>
@@ -82,14 +119,22 @@
                                             <td class="px-4 py-3 text-center">
                                                 <form action="{{ route('cart.update', $item['product']) }}" method="POST" class="d-flex justify-content-center">
                                                     @csrf
-                                                    <input type="number" 
-                                                           name="quantity" 
-                                                           min="1" 
-                                                           max="{{ $item['product']->stock }}" 
-                                                           value="{{ $item['quantity'] }}"
-                                                           class="form-control form-control-sm text-center"
-                                                           style="width: 70px;"
-                                                           onchange="this.form.submit()">
+                                                    <div class="input-group" style="width: 110px;">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="decrementQuantity(this)">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <input type="number" 
+                                                               name="quantity" 
+                                                               min="1" 
+                                                               max="{{ $item['product']->stock }}" 
+                                                               value="{{ $item['quantity'] }}"
+                                                               class="form-control form-control-sm text-center quantity-input"
+                                                               style="border-left: none; border-right: none;"
+                                                               onchange="this.form.submit()">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="incrementQuantity(this)">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
                                                 </form>
                                             </td>
 
@@ -116,13 +161,13 @@
                 </div>
 
                 <!-- Cart Actions -->
-                <div class="d-flex gap-2 mt-3">
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary flex-grow-1">
                         <i class="bi bi-arrow-left"></i> Continue Shopping
                     </a>
-                    <form action="{{ route('cart.clear') }}" method="POST" class="ms-auto">
+                    <form action="{{ route('cart.clear') }}" method="POST" class="flex-grow-1">
                         @csrf
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Clear all items from cart?')">
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Clear all items from cart?')">
                             <i class="bi bi-trash"></i> Clear Cart
                         </button>
                     </form>
@@ -131,7 +176,8 @@
 
             <!-- Order Summary Section -->
             <div class="col-12 col-lg-4">
-                <div class="card border-0 shadow-sm sticky-top" style="top: 80px;">
+                <!-- Summary Card -->
+                <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 80px;">
                     <div class="card-body">
                         <h5 class="card-title mb-4">
                             <i class="bi bi-receipt"></i> Order Summary
@@ -139,7 +185,9 @@
 
                         <!-- Items Count -->
                         <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                            <span class="text-muted">Items ({{ count($cart) }})</span>
+                            <span class="text-muted">
+                                <i class="bi bi-bag"></i> Items ({{ count($cart) }})
+                            </span>
                             <span class="fw-medium">₹{{ number_format($total, 2) }}</span>
                         </div>
 
@@ -148,13 +196,15 @@
                             <span class="text-muted">
                                 <i class="bi bi-truck"></i> Shipping
                             </span>
-                            <span class="badge bg-success">FREE</span>
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> FREE</span>
                         </div>
 
-                        <!-- Tax Info -->
+                        <!-- Discount Info -->
                         <div class="d-flex justify-content-between mb-4 pb-3 border-bottom">
-                            <span class="text-muted">Tax (incl.)</span>
-                            <span class="text-muted small">Included in price</span>
+                            <span class="text-muted">
+                                <i class="bi bi-tag"></i> Tax (incl.)
+                            </span>
+                            <span class="small text-muted">Included in price</span>
                         </div>
 
                         <!-- Total -->
@@ -164,14 +214,34 @@
                         </div>
 
                         <!-- Checkout Button -->
-                        <a href="{{ route('checkout.show') }}" class="btn btn-primary w-100 btn-lg">
+                        <a href="{{ route('checkout.show') }}" class="btn btn-primary w-100 btn-lg mb-3">
                             <i class="bi bi-lock"></i> Proceed to Checkout
                         </a>
 
                         <!-- Security Notice -->
-                        <div class="alert alert-light mt-3 mb-0">
+                        <div class="alert alert-light mb-0">
                             <small class="text-muted">
-                                <i class="bi bi-shield-check"></i> Secure checkout with SSL encryption
+                                <i class="bi bi-shield-check"></i> Secure SSL checkout
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <small class="text-muted">
+                                <i class="bi bi-arrow-repeat text-primary" style="font-size: 1.5rem;"></i>
+                                <div class="mt-2 small fw-semibold">Easy Returns</div>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check text-primary" style="font-size: 1.5rem;"></i>
+                                <div class="mt-2 small fw-semibold">Safe Payment</div>
                             </small>
                         </div>
                     </div>
@@ -180,4 +250,21 @@
         </div>
     @endif
 </div>
+
+<script>
+    function incrementQuantity(button) {
+        const input = button.parentElement.querySelector('.quantity-input');
+        const max = parseInt(input.max);
+        if (parseInt(input.value) < max) {
+            input.value = parseInt(input.value) + 1;
+        }
+    }
+    
+    function decrementQuantity(button) {
+        const input = button.parentElement.querySelector('.quantity-input');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+</script>
 @endsection

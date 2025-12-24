@@ -10,6 +10,74 @@
         <p class="text-muted mb-0">Here's what's happening with your platform today.</p>
     </div>
 
+    <!-- KPI Row 1 - Overview -->
+    <div class="row g-4 mb-4">
+        <!-- Total Users -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Users</p>
+                            <h3 class="mb-0 fw-bold">{{ $totalUsers ?? 0 }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-people text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Total Orders -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Orders</p>
+                            <h3 class="mb-0 fw-bold text-success">{{ $totalOrders ?? 0 }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-cart-check text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Total Products -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Products</p>
+                            <h3 class="mb-0 fw-bold text-info">{{ $totalProducts ?? 0 }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-box-seam text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Pending Approvals -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Pending Approvals</p>
+                            <h3 class="mb-0 fw-bold text-warning">{{ ($vendorStats['pending'] ?? 0) + ($productStats['pending'] ?? 0) }}</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-exclamation-circle text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Cards Row 1 - Vendors -->
     <div class="row g-4 mb-4">
         <!-- Approved Vendors -->

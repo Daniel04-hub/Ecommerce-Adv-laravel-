@@ -1,0 +1,776 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "E-Commerce Platform API Documentation",
+        "description": "API documentation for mobile app, vendor integrations, and admin services",
+        "contact": {
+            "email": "admin@ecommerce-platform.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Development Server"
+        },
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server (localhost)"
+        }
+    ],
+    "paths": {
+        "/api/admin/dashboard/stats": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get admin dashboard statistics",
+                "description": "Returns aggregated platform statistics for the admin dashboard.",
+                "operationId": "9dc644e136bb13302a334bb0a3ef4e25",
+                "responses": {
+                    "200": {
+                        "description": "Statistics payload"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List orders",
+                "description": "Returns all orders with customer info and status.",
+                "operationId": "6a829a2750ceacdbe340f4fc8782dbd5",
+                "responses": {
+                    "200": {
+                        "description": "Orders list"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get order",
+                "description": "Returns order details by id.",
+                "operationId": "6b3e9c27d4bc04bb3a97dcc31f3f21f8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order details"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/products": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List products",
+                "description": "Returns all products with vendor and status information.",
+                "operationId": "2ad65e2d8ebe50ffb9403be255e10888",
+                "responses": {
+                    "200": {
+                        "description": "Products list"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/products/{id}": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get product",
+                "description": "Returns product details by id.",
+                "operationId": "418a8a8b609bfb6de33a8bb7a300fb57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product details"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/products/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Approve product",
+                "description": "Marks a product as approved.",
+                "operationId": "70c54c38cfea8f2fbc69e111a56ea8a4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product approved"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/products/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Reject product",
+                "description": "Marks a product as rejected.",
+                "operationId": "e0ab1d414ff05179d9692d14459763b4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product rejected"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List users",
+                "description": "Returns all users with basic profile and role information.",
+                "operationId": "9ab297a2fa19b1915fdf53d691b01c93",
+                "responses": {
+                    "200": {
+                        "description": "Users list"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id}": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get user",
+                "description": "Returns a user's details by id.",
+                "operationId": "d8be890b152df42ae604d8753a736368",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/vendors": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List vendors",
+                "description": "Returns all vendor accounts and approval status.",
+                "operationId": "a55f1a0c0261519bef834d5748f51d98",
+                "responses": {
+                    "200": {
+                        "description": "Vendors list"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/vendors/{id}/approve": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Approve a vendor",
+                "description": "Sets vendor approval status to true.",
+                "operationId": "09b8941fb31de0e2507ab78fccc4b5ae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vendor approved"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/vendors/{id}/block": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Block a vendor",
+                "description": "Sets vendor approval status to false.",
+                "operationId": "2ec411550d53dcf203f832cb7782dfcb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vendor blocked"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/login/otp/resend": {
+            "post": {
+                "tags": [
+                    "OTP Authentication"
+                ],
+                "summary": "Resend OTP for login",
+                "description": "Request a new OTP if the previous one expired or was not received",
+                "operationId": "0c87f595832b8e62201a62ddc4e3ee56",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "customer@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "New OTP sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "New OTP sent to your email."
+                                        },
+                                        "expires_in": {
+                                            "description": "Expiry time in seconds",
+                                            "type": "integer",
+                                            "example": 300
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to send OTP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to send OTP."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{order}/cod/generate-otp": {
+            "post": {
+                "tags": [
+                    "COD Verification"
+                ],
+                "summary": "Generate COD verification OTP",
+                "description": "Customer generates OTP for delivery person to verify COD payment",
+                "operationId": "dc644940b7a0201799438dd324292adb",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OTP sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD verification OTP sent to your email and phone."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "400": {
+                        "description": "Invalid order status or not COD"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/cod/verify": {
+            "post": {
+                "tags": [
+                    "COD Verification"
+                ],
+                "summary": "Verify COD OTP and mark order as delivered",
+                "description": "Delivery person verifies OTP to confirm COD payment received",
+                "operationId": "994421857d69058eb342cbf677ec868a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "order_id",
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "order_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "otp": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD order verified successfully."
+                                        },
+                                        "order": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "delivered"
+                                                },
+                                                "delivered_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired OTP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid or expired OTP."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{order}/cod/status": {
+            "get": {
+                "tags": [
+                    "COD Verification"
+                ],
+                "summary": "Check COD OTP status",
+                "description": "Customer checks if OTP is still active and valid",
+                "operationId": "8d27b5257bb07331bb24afe404b1a47b",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OTP status retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "exists": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "remaining_seconds": {
+                                            "type": "integer",
+                                            "example": 240
+                                        },
+                                        "remaining_formatted": {
+                                            "type": "string",
+                                            "example": "4 minutes"
+                                        },
+                                        "attempts": {
+                                            "type": "integer",
+                                            "example": 0
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/vendor/orders/{order}/shipping-label/download": {
+            "get": {
+                "tags": [
+                    "Vendor"
+                ],
+                "summary": "Download shipping label",
+                "description": "Vendor downloads shipping label for their order.",
+                "operationId": "26dfcbca3c60916f66145862d4b96bca",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File download"
+                    },
+                    "404": {
+                        "description": "Label not found"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/vendor/orders/{order}/shipping-label": {
+            "get": {
+                "tags": [
+                    "Vendor"
+                ],
+                "summary": "View shipping label",
+                "description": "Vendor views shipping label in browser.",
+                "operationId": "ee3323065422419c848a42a37e7d3c64",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML content"
+                    },
+                    "404": {
+                        "description": "Label not found"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/vendor/orders/{order}/shipping-label/generate": {
+            "post": {
+                "tags": [
+                    "Vendor"
+                ],
+                "summary": "Generate shipping label",
+                "description": "Vendor generates shipping label for an order.",
+                "operationId": "fe34f92710c2373186f6ae3406f85440",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect back with success"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Laravel Sanctum authentication token",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "COD Verification",
+            "description": "Cash on Delivery OTP verification APIs for delivery persons"
+        },
+        {
+            "name": "OTP Authentication",
+            "description": "One-Time Password login system for customers"
+        },
+        {
+            "name": "Admin",
+            "description": "Admin management APIs"
+        },
+        {
+            "name": "Vendor",
+            "description": "Vendor-facing APIs and tools"
+        }
+    ]
+}
