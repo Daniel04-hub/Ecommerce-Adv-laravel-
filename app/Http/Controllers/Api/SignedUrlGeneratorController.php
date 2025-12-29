@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\SignedUrlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,9 @@ class SignedUrlGeneratorController extends Controller
     public function generateShippingLabelUrl(Request $request, Order $order)
     {
         // Only vendors can generate shipping label links
-        abort_if(!Auth::user()->hasRole('vendor'), 403, 'Unauthorized');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(!$user || !$user->hasRole('vendor'), 403, 'Unauthorized');
 
         $validated = $request->validate([
             'expires_in' => 'required|integer|min:5|max:1440',
@@ -58,3 +61,12 @@ class SignedUrlGeneratorController extends Controller
         ]);
     }
 }
+
+
+
+
+
+
+
+
+

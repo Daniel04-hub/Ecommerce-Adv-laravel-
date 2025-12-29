@@ -51,20 +51,22 @@ class OtpLoginController extends Controller
             return back()->withErrors(['email' => 'Failed to send OTP. Please try again.'])->withInput();
         }
 
+        // Store email in session for verification page
+        session(['otp_email' => $email]);
+        
         // Redirect to verification page
         return redirect()->route('otp.verify.form')
-                         ->with('email', $email)
                          ->with('success', 'OTP sent to your email. Valid for 5 minutes.');
     }
 
     /**
      * Show OTP verification form
      *
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\Support\Renderable|\Illuminate\Http\RedirectResponse
      */
     public function showVerifyForm()
     {
-        $email = session('email');
+        $email = session('otp_email');
         
         if (!$email) {
             return redirect()->route('otp.request')->withErrors(['email' => 'Please request OTP first.']);
@@ -105,6 +107,12 @@ class OtpLoginController extends Controller
             return back()->withErrors(['email' => 'User not found.']);
         }
 
+        // Clear OTP email from session
+        session()->forget('otp_email');
+        
+        // Regenerate session to prevent fixation attacks
+        $request->session()->regenerate();
+        
         Auth::login($user, true); // Remember user
 
         // Redirect based on role
@@ -156,8 +164,15 @@ class OtpLoginController extends Controller
 
         $email = $request->email;
 
-        // Delete existing OTP
-        OtpService::delete($email, 'login');
+        // Respect cooldown: if an active OTP exists, don't resend
+        if (OtpService::exists($email, 'login')) {
+            $remaining = OtpService::getRemainingTime($email, 'login') ?? (OtpService::LOGIN_EXPIRY * 60);
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP already sent. Please wait before requesting again.',
+                'expires_in' => $remaining,
+            ], 429);
+        }
 
         // Generate new OTP
         $code = OtpService::generate($email, 'login', OtpService::LOGIN_EXPIRY);
@@ -190,7 +205,7 @@ class OtpLoginController extends Controller
         } elseif ($user->role === 'vendor') {
             return redirect()->route('vendor.dashboard')->with('success', 'Welcome back, Vendor!');
         } else {
-            return redirect()->route('customer.dashboard')->with('success', 'Login successful!');
+            return redirect()->route('dashboard')->with('success', 'Login successful!');
         }
     }
 }

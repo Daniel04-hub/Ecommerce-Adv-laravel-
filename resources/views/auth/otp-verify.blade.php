@@ -1,8 +1,4 @@
-@extends('layouts.guest')
-
-@section('title', 'Verify OTP')
-
-@section('content')
+<x-guest-layout>
 <div class="container">
     <div class="row justify-content-center min-vh-100 align-items-center">
         <div class="col-md-5">
@@ -30,6 +26,11 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
+
+                    <div id="sessionExpired" class="alert alert-warning d-none" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Session expired. Please <a href="{{ route('otp.request') }}">request a new OTP</a>.
+                    </div>
 
                     <form method="POST" action="{{ route('otp.verify') }}" id="otpForm">
                         @csrf
@@ -77,15 +78,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Refresh CSRF token every 2 minutes to prevent expiry
+    setInterval(function() {
+        fetch('/login/otp/verify', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newToken = doc.querySelector('meta[name="csrf-token"]');
+            if (newToken) {
+                document.querySelector('meta[name="csrf-token"]').setAttribute('content', newToken.content);
+                const csrfInput = document.querySelector('input[name="_token"]');
+                if (csrfInput) {
+                    csrfInput.value = newToken.content;
+                }
+            }
+        }).catch(err => console.log('Token refresh skipped'));
+    }, 120000); // Every 2 minutes
+
     // Auto-submit when 6 digits entered
     const otpInput = document.getElementById('otp');
+    const otpForm = document.getElementById('otpForm');
+    let isSubmitting = false;
+    
     otpInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '');
-        if (this.value.length === 6) {
-            // Auto-submit after brief delay
-            setTimeout(() => {
-                document.getElementById('otpForm').submit();
-            }, 500);
+        if (this.value.length === 6 && !isSubmitting) {
+            // Auto-submit immediately when 6 digits entered
+            isSubmitting = true;
+            document.getElementById('verifyBtn').disabled = true;
+            document.getElementById('verifyBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+            otpForm.submit();
+        }
+    });
+
+    // Handle form submission with error recovery
+    otpForm.addEventListener('submit', function(e) {
+        if (!isSubmitting) {
+            isSubmitting = true;
+            document.getElementById('verifyBtn').disabled = true;
+            document.getElementById('verifyBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
         }
     });
 
@@ -142,4 +178,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection
+</x-guest-layout>

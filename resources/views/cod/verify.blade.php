@@ -1,8 +1,4 @@
-@extends('layouts.guest')
-
-@section('title', 'COD Verification')
-
-@section('content')
+<x-guest-layout>
 <div class="container">
     <div class="row justify-content-center min-vh-100 align-items-center">
         <div class="col-md-6">
@@ -134,4 +130,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection
+</x-guest-layout>

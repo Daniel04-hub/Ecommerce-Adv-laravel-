@@ -1,8 +1,4 @@
-@extends('layouts.guest')
-
-@section('title', 'Login with OTP')
-
-@section('content')
+<x-guest-layout>
 <div class="container">
     <div class="row justify-content-center min-vh-100 align-items-center">
         <div class="col-md-5">
@@ -84,4 +80,4 @@
         </div>
     </div>
 </div>
-@endsection
+</x-guest-layout>

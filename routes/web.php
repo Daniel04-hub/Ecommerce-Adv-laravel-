@@ -245,12 +245,14 @@ Route::middleware('guest')->group(function () {
     Route::get('/login/otp', [\App\Http\Controllers\Auth\OtpLoginController::class, 'showRequestForm'])
         ->name('otp.request');
     Route::post('/login/otp/send', [\App\Http\Controllers\Auth\OtpLoginController::class, 'sendOtp'])
+        ->middleware('throttle:otp')
         ->name('otp.send');
     Route::get('/login/otp/verify', [\App\Http\Controllers\Auth\OtpLoginController::class, 'showVerifyForm'])
         ->name('otp.verify.form');
     Route::post('/login/otp/verify', [\App\Http\Controllers\Auth\OtpLoginController::class, 'verifyOtp'])
         ->name('otp.verify');
     Route::post('/login/otp/resend', [\App\Http\Controllers\Auth\OtpLoginController::class, 'resendOtp'])
+        ->middleware('throttle:otp')
         ->name('otp.resend');
 });
 
@@ -262,6 +264,7 @@ Route::middleware('guest')->group(function () {
 // Customer: Generate COD OTP for their order
 Route::middleware(['auth'])->group(function () {
     Route::post('/orders/{order}/cod/generate-otp', [\App\Http\Controllers\CodVerificationController::class, 'generateOtp'])
+        ->middleware('throttle:otp-cod')
         ->name('cod.generate');
     Route::get('/orders/{order}/cod/status', [\App\Http\Controllers\CodVerificationController::class, 'checkOtpStatus'])
         ->name('cod.status');
@@ -271,6 +274,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/cod/verify', [\App\Http\Controllers\CodVerificationController::class, 'showVerificationForm'])
     ->name('cod.verify.form');
 Route::post('/cod/verify', [\App\Http\Controllers\CodVerificationController::class, 'verifyOtp'])
+    ->middleware('throttle:otp-cod')
     ->name('cod.verify');
 
 require __DIR__.'/auth.php';

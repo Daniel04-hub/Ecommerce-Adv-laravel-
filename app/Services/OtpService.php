@@ -14,6 +14,7 @@ class OtpService
     const DEFAULT_EXPIRY = 10; // 10 minutes
     const LOGIN_EXPIRY = 5;    // 5 minutes for login
     const COD_EXPIRY = 15;     // 15 minutes for COD verification
+    const MAX_ATTEMPTS = 3;    // Max verification attempts
 
     /**
      * Generate a 6-digit OTP
@@ -48,6 +49,11 @@ class OtpService
         ];
         
         Cache::put($cacheKey, $data, now()->addMinutes($expiryMinutes));
+        // Safe logging without exposing OTP code
+        Log::info('OTP generated', [
+            'purpose' => $purpose,
+            'identifier_hash' => hash('sha256', $identifier),
+        ]);
         
         return $code;
     }
@@ -73,15 +79,22 @@ class OtpService
         // Increment attempts
         $data['attempts']++;
         
-        // Max 3 attempts
-        if ($data['attempts'] > 3) {
-            Cache::forget($cacheKey);
-            return false;
-        }
-        
         // Verify code
         if ($data['code'] !== $code) {
-            Cache::put($cacheKey, $data, now()->addMinutes(5)); // Update attempts
+            // Preserve original expiry window based on purpose
+            $createdAt = \Carbon\Carbon::parse($data['created_at']);
+            $expiryMinutes = match($purpose) {
+                'login' => self::LOGIN_EXPIRY,
+                'cod_verification' => self::COD_EXPIRY,
+                default => self::DEFAULT_EXPIRY,
+            };
+            $expiresAt = $createdAt->copy()->addMinutes($expiryMinutes);
+            // If max attempts reached, invalidate; else update attempts
+            if ($data['attempts'] >= self::MAX_ATTEMPTS) {
+                Cache::forget($cacheKey);
+            } else {
+                Cache::put($cacheKey, $data, $expiresAt); // update attempts without extending TTL
+            }
             return false;
         }
         
@@ -89,6 +102,11 @@ class OtpService
         if ($deleteAfterVerify) {
             Cache::forget($cacheKey);
         }
+        // Safe logging without exposing OTP code
+        Log::info('OTP verified successfully', [
+            'purpose' => $purpose,
+            'identifier_hash' => hash('sha256', $identifier),
+        ]);
         
         return true;
     }
@@ -171,7 +189,8 @@ class OtpService
     public static function sendViaEmail(string $email, string $code, string $purpose = 'general'): bool
     {
         try {
-            \Illuminate\Support\Facades\Mail::to($email)->send(
+            // Queue email to avoid blocking request thread
+            \Illuminate\Support\Facades\Mail::to($email)->queue(
                 new \App\Mail\OtpMail($code, $purpose)
             );
             return true;
@@ -192,13 +211,15 @@ class OtpService
     {
         // Mock SMS sending
         // In production, integrate with SMS gateway (Twilio, Nexmo, etc.)
-        
-        Log::info("Mock SMS sent to {$phone}: Your OTP is {$code}");
+        // Safe logging without exposing OTP code
+        Log::info('Mock SMS sent', [
+            'phone' => $phone,
+        ]);
         
         // For testing, you can also log to a file
         if (config('app.debug')) {
             $logFile = storage_path('logs/sms-mock.log');
-            $message = date('Y-m-d H:i:s') . " | {$phone} | OTP: {$code}\n";
+            $message = date('Y-m-d H:i:s') . " | {$phone} | OTP sent\n";
             file_put_contents($logFile, $message, FILE_APPEND);
         }
         

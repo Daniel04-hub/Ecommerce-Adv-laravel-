@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -22,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
-   public function boot(): void
+    public function boot(): void
 {
     if (method_exists(Route::getFacadeRoot(), 'aliasMiddleware')) {
         Route::aliasMiddleware('role', RoleMiddleware::class);
@@ -32,5 +34,31 @@ class AppServiceProvider extends ServiceProvider
 
     // Register model observers
     Order::observe(OrderObserver::class);
+
+    // Rate limiting definitions
+    RateLimiter::for('api', function ($request) {
+        $key = ($request->user()?->id ?? $request->ip());
+        return [
+            Limit::perMinute(60)->by($key),
+        ];
+    });
+
+    // OTP requests (login) — stricter limits
+    RateLimiter::for('otp', function ($request) {
+        $identity = strtolower($request->input('email') ?? 'guest');
+        $key = $request->ip() . '|' . $identity;
+        return [
+            Limit::perMinute(3)->by($key),
+        ];
+    });
+
+    // COD OTP generation / verification — stricter limits
+    RateLimiter::for('otp-cod', function ($request) {
+        $orderId = (string) ($request->route('order')?->id ?? $request->input('order_id') ?? 'unknown');
+        $key = $request->ip() . '|order:' . $orderId;
+        return [
+            Limit::perMinute(2)->by($key),
+        ];
+    });
 }
 }

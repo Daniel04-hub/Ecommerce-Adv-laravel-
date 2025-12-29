@@ -274,5 +274,45 @@
     
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @auth
+    <script>
+        // Subscribe to customer order status updates
+        if (window.Echo && {{ auth()->check() ? 'true' : 'false' }}) {
+            const userId = {{ auth()->id() }};
+            try {
+                window.Echo.private(`orders.customer.${userId}`)
+                    .listen('.order.status-updated', (e) => {
+                        // Update any DOM element displaying order status
+                        const el = document.querySelector(`.js-order-status[data-order-id='${e.id}']`);
+                        if (el) {
+                            el.textContent = e.status;
+                        }
+                        console.info('Order status updated', e);
+                    });
+            } catch (err) {
+                console.warn('Echo subscription failed (customer):', err);
+            }
+
+            // If the user is a vendor, also subscribe to vendor channel
+            @if(method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('vendor'))
+            const vendorId = {{ auth()->user()->vendor_id ?? 'null' }};
+            if (vendorId) {
+                try {
+                    window.Echo.private(`orders.vendor.${vendorId}`)
+                        .listen('.order.status-updated', (e) => {
+                            const el = document.querySelector(`.js-order-status[data-order-id='${e.id}']`);
+                            if (el) {
+                                el.textContent = e.status;
+                            }
+                            console.info('Vendor order status updated', e);
+                        });
+                } catch (err) {
+                    console.warn('Echo subscription failed (vendor):', err);
+                }
+            }
+            @endif
+        }
+    </script>
+    @endauth
 </body>
 </html>

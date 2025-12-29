@@ -44,7 +44,7 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
                 'annotations' => [
-                    base_path('app'),
+                    base_path('app/Http/Controllers'),
                 ],
             ],
         ],
@@ -65,9 +65,12 @@ return [
              * Middleware allows to prevent unexpected access to API documentation
              */
             'middleware' => [
-                'api' => [],
+                // Swagger UI (api/documentation) should be admin-only
+                'api' => ['web', 'auth', 'role:admin'],
+                // Assets can remain public to load UI resources
                 'asset' => [],
-                'docs' => [],
+                // Raw docs JSON/YAML should also be admin-only
+                'docs' => ['web', 'auth', 'role:admin'],
                 'oauth2_callback' => [],
             ],
 
