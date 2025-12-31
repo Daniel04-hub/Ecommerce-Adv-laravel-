@@ -152,6 +152,9 @@
                                     <!-- Action Buttons -->
                                     <td class="px-4 py-3 text-center">
                                         <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ route('admin.vendors.show', $vendor) }}" class="btn btn-outline-primary" title="View Vendor Details">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
                                             @if($vendor->status !== 'approved')
                                                 <form action="{{ route('admin.vendors.approve', $vendor) }}" method="POST" class="d-inline">
                                                     @csrf

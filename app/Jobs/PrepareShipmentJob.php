@@ -23,10 +23,6 @@ class PrepareShipmentJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('PrepareShipmentJob EXECUTED', [
-            'order_id' => $this->orderId,
-        ]);
-
         // Integrate existing shipment preparation logic here if available.
     }
 }

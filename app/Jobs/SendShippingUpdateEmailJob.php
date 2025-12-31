@@ -33,7 +33,7 @@ class SendShippingUpdateEmailJob implements ShouldQueue
             // Idempotency check: prevent duplicate email if job runs twice
             $cacheKey = "shipping_update_sent_{$this->orderId}";
             if (Cache::has($cacheKey)) {
-                Log::info('Shipping update email already sent (idempotent skip)', [
+                Log::debug('Shipping update email already sent (idempotent skip)', [
                     'order_id' => $this->orderId,
                 ]);
                 return;
@@ -65,19 +65,17 @@ class SendShippingUpdateEmailJob implements ShouldQueue
                 return;
             }
 
-            Log::info('Sending shipping update email', [
-                'order_id' => $this->orderId,
-                'status' => $data['status'],
-            ]);
-
             // Mark as processed (24-hour TTL)
             Cache::put($cacheKey, true, 86400);
 
-            // ONLY place where mail is sent
-            Mail::to($order->user->email)->send(new OrderShippedMail($data));
+            // Queue mail (do not send synchronously)
+            $mailable = (new OrderShippedMail($data))
+                ->onQueue(config('queues.shipping'));
+            Mail::to($order->user->email)->queue($mailable);
 
-            Log::info('Shipping update email sent successfully', [
+            Log::info('Email queued: OrderShippedMail', [
                 'order_id' => $this->orderId,
+                'to' => $order->user->email,
             ]);
         } catch (\Exception $e) {
             Log::error('Shipping update email failed', [

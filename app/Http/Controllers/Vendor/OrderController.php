@@ -7,6 +7,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\OrderStatusService;
+use Illuminate\Support\Facades\Log;
+use App\Events\OrderStatusUpdated;
 
 
 class OrderController extends Controller
@@ -52,6 +54,11 @@ class OrderController extends Controller
 
         $orders = $query->get();
 
+        Log::info('Order visible to vendor', [
+            'vendor_id' => $vendorId,
+            'orders_count' => $orders->count(),
+        ]);
+
         return view('vendor.orders.index', compact('orders'));
     }
 
@@ -69,8 +76,13 @@ class OrderController extends Controller
 
         abort_if(!$order->canTransitionTo($status), 422);
 
+        $previousStatus = (string) $order->status;
+
         // Update via service to ensure event dispatch (triggers shipping email when status becomes shipped)
         abort_if(!OrderStatusService::update($order, $status), 422);
+
+        // Fire corresponding event for downstream listeners / jobs / mail.
+        event(new OrderStatusUpdated($order, $previousStatus, $status));
 
         return back()->with('success', 'Order status updated');
     }

@@ -22,13 +22,14 @@ class SendShippingUpdateJob implements ShouldQueue
     public function __construct(Order $order)
     {
         $this->orderId = $order->id;
+        $this->onQueue(config('queues.shipping'));
     }
 
     public function handle(): void
     {
         $cacheKey = "shipping_update_sent_{$this->orderId}";
         if (Cache::has($cacheKey)) {
-            Log::info('Shipping update email already sent (idempotent skip)', [
+            Log::debug('Shipping update email already sent (idempotent skip)', [
                 'order_id' => $this->orderId,
             ]);
             return;
@@ -44,7 +45,7 @@ class SendShippingUpdateJob implements ShouldQueue
 
         // Do not resend if status is no longer shipped
         if ($order->status !== 'shipped') {
-            Log::info('Shipping update email skipped: status not shipped anymore', [
+            Log::debug('Shipping update email skipped: status not shipped anymore', [
                 'order_id' => $this->orderId,
                 'status' => $order->status,
             ]);
@@ -60,10 +61,13 @@ class SendShippingUpdateJob implements ShouldQueue
         // Mark as processed for 24h (prevents duplicates)
         Cache::put($cacheKey, true, 86400);
 
-        Log::info('Subject: Your order has been shipped', [
-            'order_id' => $this->orderId,
-        ]);
+        $mailable = (new OrderShippedMail($data))
+            ->onQueue(config('queues.shipping'));
+        Mail::to($order->user->email)->queue($mailable);
 
-        Mail::to($order->user->email)->send(new OrderShippedMail($data));
+        Log::info('Email queued: OrderShippedMail', [
+            'order_id' => $this->orderId,
+            'to' => $order->user->email,
+        ]);
     }
 }

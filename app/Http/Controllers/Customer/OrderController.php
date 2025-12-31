@@ -69,6 +69,14 @@ class OrderController extends Controller
                     'status'     => 'placed',
                 ]);
 
+                Log::info('Order created', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'vendor_id' => $order->vendor_id,
+                    'product_id' => $order->product_id,
+                    'status' => $order->status,
+                ]);
+
                 // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)
                 DB::afterCommit(function () use ($order) {
                     OrderPlaced::dispatch($order->id);
@@ -119,6 +127,14 @@ class OrderController extends Controller
                     'quantity'   => $data['quantity'],
                     'price'      => $product->price * $data['quantity'],
                     'status'     => 'placed',
+                ]);
+
+                Log::info('Order created', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'vendor_id' => $order->vendor_id,
+                    'product_id' => $order->product_id,
+                    'status' => $order->status,
                 ]);
 
                 // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)

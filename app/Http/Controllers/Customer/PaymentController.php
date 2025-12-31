@@ -9,6 +9,7 @@ use App\Events\OrderPlaced;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -102,6 +103,14 @@ class PaymentController extends Controller
                     'email' => $checkout['email'] ?? Auth::user()->email,
                     'phone' => $checkout['phone'] ?? null,
                     'address' => $checkout['address'] ?? null,
+                ]);
+
+                Log::info('Order created', [
+                    'order_id' => $singleOrder->id,
+                    'user_id' => $singleOrder->user_id,
+                    'vendor_id' => $singleOrder->vendor_id,
+                    'product_id' => $singleOrder->product_id,
+                    'status' => $singleOrder->status,
                 ]);
 
                 // Reduce product stock

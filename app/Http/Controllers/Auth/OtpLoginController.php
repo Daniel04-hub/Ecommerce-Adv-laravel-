@@ -200,12 +200,13 @@ class OtpLoginController extends Controller
      */
     protected function redirectAfterLogin(User $user)
     {
-        if ($user->role === 'admin') {
+        if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
             return redirect()->route('admin.dashboard')->with('success', 'Welcome back, Admin!');
-        } elseif ($user->role === 'vendor') {
+        } elseif (method_exists($user, 'hasRole') && $user->hasRole('vendor')) {
             return redirect()->route('vendor.dashboard')->with('success', 'Welcome back, Vendor!');
         } else {
-            return redirect()->route('dashboard')->with('success', 'Login successful!');
+            // Customers land on product catalog for immediate shopping
+            return redirect()->route('products.index')->with('success', 'Login successful!');
         }
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\ProductApproved;
+use App\Events\ProductRejected;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -32,7 +34,8 @@ class ProductsApiController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'price' => $product->price,
-                'stock_quantity' => $product->stock_quantity,
+                // Align with schema: products table uses `stock`
+                'stock' => $product->stock,
                 'status' => $product->status,
                 'vendor_name' => $product->vendor?->user?->name,
                 'created_at' => $product->created_at,
@@ -71,7 +74,8 @@ class ProductsApiController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'price' => $product->price,
-                'stock_quantity' => $product->stock_quantity,
+                // Align with schema: products table uses `stock`
+                'stock' => $product->stock,
                 'status' => $product->status,
                 'vendor_name' => $product->vendor?->user?->name,
                 'created_at' => $product->created_at,
@@ -100,7 +104,13 @@ class ProductsApiController extends Controller
     public function approve($id)
     {
         $product = Product::findOrFail($id);
-        $product->update(['status' => 'approved']);
+        $before = $product->status;
+        // Align with schema and customer browse expectations
+        $product->update(['status' => 'active']);
+
+        if ($before !== 'active') {
+            event(new ProductApproved($product->id));
+        }
 
         return response()->json([
             'success' => true,
@@ -128,7 +138,13 @@ class ProductsApiController extends Controller
     public function reject($id)
     {
         $product = Product::findOrFail($id);
-        $product->update(['status' => 'rejected']);
+        $before = $product->status;
+        // Align with schema and customer browse expectations
+        $product->update(['status' => 'inactive']);
+
+        if ($before !== 'inactive') {
+            event(new ProductRejected($product->id));
+        }
 
         return response()->json([
             'success' => true,

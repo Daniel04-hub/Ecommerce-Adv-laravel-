@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
+use App\Events\VendorApproved;
+use App\Events\VendorSuspended;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -33,15 +35,36 @@ class VendorManagementController extends Controller
         return view('admin.vendors.index', compact('vendors'));
     }
 
+    public function show(Vendor $vendor)
+    {
+        $vendor->load(['user', 'profile']);
+
+        return view('admin.vendors.show', [
+            'vendor' => $vendor,
+            'profile' => $vendor->profile,
+        ]);
+    }
+
     public function approve(Vendor $vendor): RedirectResponse
     {
+        $before = $vendor->status;
         $vendor->update(['status' => 'approved']);
+
+        if ($before !== 'approved') {
+            event(new VendorApproved($vendor->id));
+        }
         return back()->with('status', 'Vendor approved');
     }
 
     public function block(Vendor $vendor): RedirectResponse
     {
-        $vendor->update(['status' => 'blocked']);
-        return back()->with('status', 'Vendor blocked');
+        $before = $vendor->status;
+        $vendor->update(['status' => 'suspended']);
+
+        if ($before !== 'suspended') {
+            event(new VendorSuspended($vendor->id));
+        }
+
+        return back()->with('status', 'Vendor suspended');
     }
 }

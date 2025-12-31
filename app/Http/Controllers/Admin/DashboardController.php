@@ -14,13 +14,13 @@ class DashboardController extends Controller
     {
         $vendorStats = [
             'approved' => Vendor::where('status', 'approved')->count(),
-            'blocked' => Vendor::where('status', 'blocked')->count(),
+            'suspended' => Vendor::where('status', 'suspended')->count(),
             'pending' => Vendor::where('status', 'pending')->count(),
         ];
 
         $productStats = [
-            'approved' => Product::where('status', 'approved')->count(),
-            'rejected' => Product::where('status', 'rejected')->count(),
+            'active' => Product::where('status', 'active')->count(),
+            'inactive' => Product::where('status', 'inactive')->count(),
             'pending' => Product::where('status', 'pending')->count(),
         ];
 

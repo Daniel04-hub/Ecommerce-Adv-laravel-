@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Events\PaymentSuccess;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -27,16 +28,12 @@ class VerifyPaymentJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('VerifyPaymentJob EXECUTED', [
-            'order_id' => $this->orderId,
-        ]);
-
-        $order = \App\Models\Order::find($this->orderId);
+        $order = Order::find($this->orderId);
 
         if (!$order) {
             return;
         }
 
-        $order->update(['status' => 'completed']);
+        event(new PaymentSuccess($this->orderId));
     }
 }

@@ -189,13 +189,23 @@ class OtpService
     public static function sendViaEmail(string $email, string $code, string $purpose = 'general'): bool
     {
         try {
-            // Queue email to avoid blocking request thread
-            \Illuminate\Support\Facades\Mail::to($email)->queue(
-                new \App\Mail\OtpMail($code, $purpose)
-            );
+            $mailable = (new \App\Mail\OtpMail($code, $purpose))
+                ->onQueue(config('queues.payment'));
+
+            \Illuminate\Support\Facades\Mail::to($email)->queue($mailable);
+
+            Log::info('Email queued: OtpMail', [
+                'purpose' => $purpose,
+                'to_hash' => hash('sha256', $email),
+            ]);
             return true;
         } catch (\Exception $e) {
-            Log::error('OTP Email send failed: ' . $e->getMessage());
+            Log::error('OTP email send failed', [
+                'purpose' => $purpose,
+                'mailer' => config('mail.default'),
+                'to_hash' => hash('sha256', $email),
+                'error' => $e->getMessage(),
+            ]);
             return false;
         }
     }
@@ -212,7 +222,7 @@ class OtpService
         // Mock SMS sending
         // In production, integrate with SMS gateway (Twilio, Nexmo, etc.)
         // Safe logging without exposing OTP code
-        Log::info('Mock SMS sent', [
+        Log::debug('Mock SMS sent', [
             'phone' => $phone,
         ]);
         

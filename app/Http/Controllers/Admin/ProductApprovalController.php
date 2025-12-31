@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\ProductApproved;
+use App\Events\ProductRejected;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -30,14 +32,24 @@ class ProductApprovalController extends Controller
 
     public function approve(Product $product)
     {
+        $before = $product->status;
         $product->update(['status' => 'active']);
+
+        if ($before !== 'active') {
+            event(new ProductApproved($product->id));
+        }
 
         return back()->with('success', 'Product approved');
     }
 
     public function reject(Product $product)
     {
+        $before = $product->status;
         $product->update(['status' => 'inactive']);
+
+        if ($before !== 'inactive') {
+            event(new ProductRejected($product->id));
+        }
 
         return back()->with('success', 'Product rejected');
     }

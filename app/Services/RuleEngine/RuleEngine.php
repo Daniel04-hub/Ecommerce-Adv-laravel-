@@ -55,7 +55,7 @@ class RuleEngine
             $result['applied'][] = $rule['id'];
         }
 
-        Log::info('Rule engine evaluation', [
+        Log::debug('Rule engine evaluation', [
             'ruleset'   => $rulesetName,
             'applied'   => $result['applied'],
             'denies'    => $result['denies'],

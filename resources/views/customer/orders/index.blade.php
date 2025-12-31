@@ -231,9 +231,9 @@
                                     </a>
                                 @elseif($order->status !== 'cancelled')
                                     <span class="ms-auto">
-                                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Track your order">
+                                        <a href="{{ route('customer.orders.show', $order) }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Track your order">
                                             <i class="bi bi-geo-alt"></i> Track Order
-                                        </button>
+                                        </a>
                                     </span>
                                 @endif
                             </div>

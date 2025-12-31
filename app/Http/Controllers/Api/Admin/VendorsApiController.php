@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Events\VendorApproved;
+use App\Events\VendorSuspended;
 use Illuminate\Http\Request;
 
 class VendorsApiController extends Controller
@@ -34,7 +36,8 @@ class VendorsApiController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'is_approved' => $user->vendor?->is_approved ?? false,
+                'is_approved' => ($user->vendor?->status ?? null) === 'approved',
+                'status' => $user->vendor?->status,
                 'created_at' => $user->created_at,
             ];
         });
@@ -64,7 +67,12 @@ class VendorsApiController extends Controller
     public function approve($id)
     {
         $vendor = Vendor::where('user_id', $id)->firstOrFail();
-        $vendor->update(['is_approved' => true]);
+        $before = $vendor->status;
+        $vendor->update(['status' => 'approved']);
+
+        if ($before !== 'approved') {
+            event(new VendorApproved($vendor->id));
+        }
 
         return response()->json([
             'success' => true,
@@ -92,7 +100,12 @@ class VendorsApiController extends Controller
     public function block($id)
     {
         $vendor = Vendor::where('user_id', $id)->firstOrFail();
-        $vendor->update(['is_approved' => false]);
+        $before = $vendor->status;
+        $vendor->update(['status' => 'suspended']);
+
+        if ($before !== 'suspended') {
+            event(new VendorSuspended($vendor->id));
+        }
 
         return response()->json([
             'success' => true,

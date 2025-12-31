@@ -23,10 +23,6 @@ class UpdateStockJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('UpdateStockJob EXECUTED', [
-            'order_id' => $this->orderId,
-        ]);
-
         // Integrate existing stock update logic here if available.
     }
 }

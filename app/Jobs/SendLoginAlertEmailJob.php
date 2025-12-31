@@ -18,6 +18,16 @@ class SendLoginAlertEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 5;
+
+    /**
+     * Backoff in seconds between attempts.
+     * Helps with SMTP transient failures / Mailtrap rate limiting.
+     *
+     * @var array<int>
+     */
+    public array $backoff = [10, 30, 60, 120];
+
     public int $userId;
     public ?string $ipAddress;
     public string $dedupeKey;
@@ -29,7 +39,7 @@ class SendLoginAlertEmailJob implements ShouldQueue
         $this->ipAddress = $ipAddress;
         $this->dedupeKey = $dedupeKey ?? Str::uuid()->toString();
         $this->loginAt = $loginAt ?? now()->toDateTimeString();
-        $this->onQueue(config('queues.shipping'));
+        $this->onQueue(config('queues.payment'));
     }
 
     public function handle(): void
@@ -38,7 +48,16 @@ class SendLoginAlertEmailJob implements ShouldQueue
             // Idempotency check: prevent duplicate email if the same job is retried
             $cacheKey = "login_alert_sent_{$this->userId}_{$this->dedupeKey}";
             if (Cache::has($cacheKey)) {
-                Log::info('Login alert email already sent (idempotent skip)', [
+                Log::debug('Login alert email already sent (idempotent skip)', [
+                    'user_id' => $this->userId,
+                ]);
+                return;
+            }
+
+            // Prevent concurrent duplicate sends (multiple workers / retries)
+            $processingKey = $cacheKey . '_processing';
+            if (! Cache::add($processingKey, true, 60)) {
+                Log::debug('Login alert email already being processed (concurrent skip)', [
                     'user_id' => $this->userId,
                 ]);
                 return;
@@ -70,26 +89,28 @@ class SendLoginAlertEmailJob implements ShouldQueue
                 return;
             }
 
-            Log::info('Sending login alert email', [
+            // Queue mail (do not send synchronously)
+            $mailable = (new LoginAlertMail($data))
+                ->onQueue(config('queues.payment'));
+            Mail::to($user->email)->queue($mailable);
+
+            Log::info('Email queued: LoginAlertMail', [
                 'user_id' => $this->userId,
-                'ip_address' => $data['ipAddress'],
+                'to' => $user->email,
             ]);
 
-            // Mark as processed (10-minute TTL per login event)
+            // Mark as processed (10-minute TTL per login event) AFTER a successful send
             Cache::put($cacheKey, true, 600);
-
-            // ONLY place where mail is sent
-            Mail::to($user->email)->send(new LoginAlertMail($data));
-
-            Log::info('Login alert email sent successfully', [
-                'user_id' => $this->userId,
-            ]);
         } catch (\Exception $e) {
             Log::error('Login alert email failed', [
                 'user_id' => $this->userId,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
+        } finally {
+            if (isset($processingKey)) {
+                Cache::forget($processingKey);
+            }
         }
     }
 }

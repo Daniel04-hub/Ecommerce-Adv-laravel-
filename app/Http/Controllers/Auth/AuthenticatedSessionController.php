@@ -66,13 +66,14 @@ class AuthenticatedSessionController extends Controller
         }
 
         try {
-            if (method_exists($user, 'hasRole') && $user->hasRole($role)) {
-                return true;
-            }
         } catch (\Throwable $e) {
             // Fallback below
         }
 
-        return ($user->role ?? null) === $role;
+            if (method_exists($user, 'hasRole')) {
+                return $user->hasRole($role);
+            }
+
+            return false;
     }
 }

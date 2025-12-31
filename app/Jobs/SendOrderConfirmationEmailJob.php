@@ -17,12 +17,22 @@ class SendOrderConfirmationEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 5;
+
+    /**
+     * Backoff in seconds between attempts.
+     * Helps with SMTP transient failures / Mailtrap rate limiting.
+     *
+     * @var array<int>
+     */
+    public array $backoff = [10, 30, 60, 120];
+
     public int $orderId;
 
     public function __construct(int $orderId)
     {
         $this->orderId = $orderId;
-        $this->onQueue(config('queues.shipping'));
+        $this->onQueue(config('queues.payment'));
     }
 
     public function handle(): void
@@ -31,7 +41,16 @@ class SendOrderConfirmationEmailJob implements ShouldQueue
             // Idempotency check: prevent duplicate email if job runs twice
             $cacheKey = "order_confirmation_sent_{$this->orderId}";
             if (Cache::has($cacheKey)) {
-                Log::info('Order confirmation email already sent (idempotent skip)', [
+                Log::debug('Order confirmation email already sent (idempotent skip)', [
+                    'order_id' => $this->orderId,
+                ]);
+                return;
+            }
+
+            // Prevent concurrent duplicate sends
+            $processingKey = $cacheKey . '_processing';
+            if (! Cache::add($processingKey, true, 60)) {
+                Log::debug('Order confirmation email already being processed (concurrent skip)', [
                     'order_id' => $this->orderId,
                 ]);
                 return;
@@ -65,26 +84,28 @@ class SendOrderConfirmationEmailJob implements ShouldQueue
                 return;
             }
 
-            Log::info('Sending order confirmation email', [
+            // Queue mail (do not send synchronously)
+            $mailable = (new OrderPlacedMail($data))
+                ->onQueue(config('queues.payment'));
+            Mail::to($order->user->email)->queue($mailable);
+
+            Log::info('Email queued: OrderPlacedMail', [
                 'order_id' => $this->orderId,
-                'user_id' => $order->user->id,
+                'to' => $order->user->email,
             ]);
 
-            // Mark as processed (24-hour TTL)
+            // Mark as processed (24-hour TTL) AFTER a successful send
             Cache::put($cacheKey, true, 86400);
-
-            // ONLY place where mail is sent
-            Mail::to($order->user->email)->send(new OrderPlacedMail($data));
-
-            Log::info('Order confirmation email sent successfully', [
-                'order_id' => $this->orderId,
-            ]);
         } catch (\Exception $e) {
             Log::error('Order confirmation email failed', [
                 'order_id' => $this->orderId,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
+        } finally {
+            if (isset($processingKey)) {
+                Cache::forget($processingKey);
+            }
         }
     }
 }

@@ -135,10 +135,9 @@ class CodVerificationController extends Controller
             ], 400);
         }
 
-        // OTP verified - update order status to delivered
+        // OTP verified - update order status
         $order->update([
-            'status' => 'delivered',
-            'delivered_at' => now(),
+            'status' => 'completed',
         ]);
 
         return response()->json([
@@ -147,7 +146,6 @@ class CodVerificationController extends Controller
             'order' => [
                 'id' => $order->id,
                 'status' => $order->status,
-                'delivered_at' => $order->delivered_at,
             ]
         ]);
     }

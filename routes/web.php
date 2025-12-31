@@ -12,6 +12,7 @@ use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Vendor\ProductController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
+use App\Http\Controllers\Vendor\ProfileController as VendorProfileController;
 use App\Http\Controllers\Admin\ProductApprovalController;
 use App\Http\Controllers\Auth\GoogleController;
 
@@ -114,13 +115,15 @@ Route::middleware('auth')->group(function () {
         if ($user?->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         }
-        return view('dashboard');
+        // Default: customers and other roles go to product catalog
+        return redirect()->route('products.index');
     })->name('dashboard');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/logout-other-sessions', [ProfileController::class, 'logoutOtherSessions'])->name('profile.logout-other-sessions');
 
     /*
     |--------------------------------------------------------------------------
@@ -190,6 +193,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{order}/{status}', [VendorOrderController::class, 'updateStatus'])
             ->name('orders.updateStatus');
 
+        // Vendor Company Profile
+        Route::get('/profile', [VendorProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [VendorProfileController::class, 'update'])->name('profile.update');
+
         // Vendor Shipping Labels (Private Files)
         Route::get('/orders/{order}/shipping-label/download', [\App\Http\Controllers\Vendor\ShippingLabelController::class, 'download'])
             ->name('orders.shipping-label.download');
@@ -225,6 +232,8 @@ Route::middleware('auth')->group(function () {
         // Admin Vendor Management
         Route::get('/vendors', [\App\Http\Controllers\Admin\VendorManagementController::class, 'index'])
             ->name('vendors.index');
+        Route::get('/vendors/{vendor}', [\App\Http\Controllers\Admin\VendorManagementController::class, 'show'])
+            ->name('vendors.show');
         Route::patch('/vendors/{vendor}/approve', [\App\Http\Controllers\Admin\VendorManagementController::class, 'approve'])
             ->name('vendors.approve');
         Route::patch('/vendors/{vendor}/block', [\App\Http\Controllers\Admin\VendorManagementController::class, 'block'])

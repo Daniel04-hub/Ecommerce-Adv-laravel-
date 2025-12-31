@@ -57,9 +57,31 @@
                 <div class="card-body">
                     <p class="text-muted mb-4">Update your account's profile information and email address.</p>
 
-                    <form method="POST" action="{{ route('profile.update') }}">
+                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                         @csrf
                         @method('PATCH')
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Profile Image</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light border rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; overflow: hidden;">
+                                    @if(!empty($profile?->profile_image_path))
+                                        <img src="{{ asset('storage/' . $profile->profile_image_path) }}" alt="Profile" style="width: 64px; height: 64px; object-fit: cover;">
+                                    @else
+                                        <i class="bi bi-person" style="font-size: 1.5rem;"></i>
+                                    @endif
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control @error('profile_image') is-invalid @enderror" name="profile_image" accept="image/*">
+                                    @error('profile_image')
+                                        <div class="invalid-feedback d-block">
+                                            <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <small class="text-muted">PNG/JPG up to 4MB.</small>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="mb-3">
                             <label for="name" class="form-label fw-semibold">Full Name</label>
@@ -96,6 +118,26 @@
                                     </div>
                                 @endif
                             @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-semibold">Phone</label>
+                            <input type="text" class="form-control form-control-lg @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $profile->phone ?? '') }}" placeholder="Enter your phone number">
+                            @error('phone')
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="address" class="form-label fw-semibold">Address</label>
+                            <textarea class="form-control form-control-lg @error('address') is-invalid @enderror" id="address" name="address" rows="3" placeholder="Enter your address">{{ old('address', $profile->address ?? '') }}</textarea>
+                            @error('address')
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
                         </div>
 
                         <div class="d-flex gap-2 align-items-center">

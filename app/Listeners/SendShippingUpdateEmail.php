@@ -9,7 +9,6 @@ class SendShippingUpdateEmail
 {
     public function handle(OrderStatusUpdated $event): void
     {
-        // Only send email when status becomes "shipped"
         if ($event->newStatus !== 'shipped') {
             return;
         }

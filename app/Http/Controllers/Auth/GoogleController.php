@@ -34,25 +34,20 @@ class GoogleController extends Controller
                 ->withErrors(['oauth' => 'No email address was returned from Google.']);
         }
 
-        // Match users by email to preserve existing roles
+        // Admin-only Google OAuth: must match an existing admin user by email.
         $user = User::where('email', $googleUser->getEmail())->first();
+        if (! $user) {
+            return redirect()->route('login')
+                ->withErrors(['oauth' => 'No admin account exists for this Google email.']);
+        }
 
-        if (!$user) {
-            // Create a new user; assign customer role ONLY for new users
-            $user = User::create([
-                'name' => $googleUser->getName() ?: $googleUser->getNickname() ?: $googleUser->getEmail(),
-                'email' => $googleUser->getEmail(),
-                'password' => Hash::make(Str::random(40)),
-            ]);
+        $isAdmin = method_exists($user, 'hasRole')
+            ? $user->hasRole('admin')
+            : (($user->role ?? null) === 'admin');
 
-            // mark email as verified without mass assignment
-            $user->email_verified_at = now();
-            $user->save();
-
-            // Assign the spatie role without affecting any other setup
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole('customer');
-            }
+        if (! $isAdmin) {
+            return redirect()->route('login')
+                ->withErrors(['oauth' => 'This Google account is not authorized for admin access.']);
         }
 
         // Log the user in
@@ -70,6 +65,7 @@ class GoogleController extends Controller
         if ($user->hasRole('vendor')) {
             return redirect()->route('vendor.dashboard');
         }
-        return redirect()->route('dashboard');
+        // For customers and all other roles, land on product catalog
+        return redirect()->route('products.index');
     }
 }

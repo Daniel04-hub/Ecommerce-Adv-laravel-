@@ -2,14 +2,18 @@
 
 namespace App\Listeners;
 
-use App\Events\StockUpdated;
+use App\Events\OrderStatusUpdated;
 use App\Jobs\PrepareShipmentJob;
 
 class DispatchPrepareShipment
 {
-    public function handle(StockUpdated $event): void
+    public function handle(OrderStatusUpdated $event): void
     {
-        PrepareShipmentJob::dispatch($event->orderId)
+        if ($event->newStatus !== 'shipped') {
+            return;
+        }
+
+        PrepareShipmentJob::dispatch($event->order->id)
             ->onQueue(config('queues.shipping'));
     }
 }

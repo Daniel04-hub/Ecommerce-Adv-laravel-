@@ -32,4 +32,9 @@ class Vendor extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function profile()
+    {
+        return $this->hasOne(VendorProfile::class);
+    }
 }
