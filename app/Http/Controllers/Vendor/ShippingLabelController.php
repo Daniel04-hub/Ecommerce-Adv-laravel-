@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\ShippingLabelService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,12 +33,15 @@ class ShippingLabelController extends Controller
     {
         // Ensure vendor can only download labels for their orders
         $user = Auth::user();
-        $isVendor = $user->role === 'vendor';
+        abort_unless($user instanceof User, 401);
+        /** @var User $vendorUser */
+        $vendorUser = $user;
+        $isVendor = $vendorUser->hasRole('vendor');
         
         abort_if(!$isVendor, 403, 'Only vendors can download shipping labels');
 
         // Generate shipping label if not exists
-        $path = ShippingLabelService::generateIfNotExists($order);
+        ShippingLabelService::generateIfNotExists($order);
 
         // Download label
         $response = ShippingLabelService::download($order);
@@ -72,7 +75,10 @@ class ShippingLabelController extends Controller
     {
         // Ensure vendor can only view labels for their orders
         $user = Auth::user();
-        $isVendor = $user->role === 'vendor';
+        abort_unless($user instanceof User, 401);
+        /** @var User $vendorUser */
+        $vendorUser = $user;
+        $isVendor = $vendorUser->hasRole('vendor');
         
         abort_if(!$isVendor, 403, 'Only vendors can view shipping labels');
 
@@ -107,11 +113,14 @@ class ShippingLabelController extends Controller
     public function generate(Order $order)
     {
         $user = Auth::user();
-        $isVendor = $user->role === 'vendor';
+        abort_unless($user instanceof User, 401);
+        /** @var User $vendorUser */
+        $vendorUser = $user;
+        $isVendor = $vendorUser->hasRole('vendor');
         
         abort_if(!$isVendor, 403);
 
-        $path = ShippingLabelService::generate($order);
+        ShippingLabelService::generate($order);
 
         return redirect()->back()->with('success', 'Shipping label generated successfully');
     }

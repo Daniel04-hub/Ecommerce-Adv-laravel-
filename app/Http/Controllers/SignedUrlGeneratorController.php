@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\User;
 use App\Services\SignedUrlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,7 +64,10 @@ class SignedUrlGeneratorController extends Controller
 
         // Verify user owns the order (for customers)
         $user = Auth::user();
-        $isAdmin = $user->role === 'admin';
+        abort_unless($user instanceof User, 401);
+        /** @var User $authUser */
+        $authUser = $user;
+        $isAdmin = $authUser->hasRole('admin');
         
         if (!$isAdmin && $order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
@@ -109,7 +113,10 @@ class SignedUrlGeneratorController extends Controller
          */
         // Only vendors/admins can generate shipping labels
         $user = Auth::user();
-        $hasAccess = in_array($user->role, ['vendor', 'admin']);
+        abort_unless($user instanceof User, 401);
+        /** @var User $authUser */
+        $authUser = $user;
+        $hasAccess = $authUser->hasRole(['vendor', 'admin']);
         
         abort_if(!$hasAccess, 403);
 
