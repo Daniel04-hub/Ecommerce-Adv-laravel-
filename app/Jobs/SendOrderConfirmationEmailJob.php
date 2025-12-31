@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\Mailer\Exception\UnexpectedResponseException;
 
 class SendOrderConfirmationEmailJob implements ShouldQueue
 {
@@ -84,12 +85,23 @@ class SendOrderConfirmationEmailJob implements ShouldQueue
                 return;
             }
 
-            // Queue mail (do not send synchronously)
-            $mailable = (new OrderPlacedMail($data))
-                ->onQueue(config('queues.payment'));
-            Mail::to($order->user->email)->queue($mailable);
+            // Send within this job (avoid spawning additional SendQueuedMailable jobs)
+            // and handle Mailtrap rate-limits by retrying with backoff.
+            $mailable = new OrderPlacedMail($data);
+            try {
+                Mail::to($order->user->email)->send($mailable);
+            } catch (UnexpectedResponseException $e) {
+                if (str_contains($e->getMessage(), 'Too many emails per second')) {
+                    Log::warning('Mailtrap rate limit hit; releasing job to retry', [
+                        'order_id' => $this->orderId,
+                    ]);
+                    $this->release(60);
+                    return;
+                }
+                throw $e;
+            }
 
-            Log::info('Email queued: OrderPlacedMail', [
+            Log::info('Email sent: OrderPlacedMail', [
                 'order_id' => $this->orderId,
                 'to' => $order->user->email,
             ]);

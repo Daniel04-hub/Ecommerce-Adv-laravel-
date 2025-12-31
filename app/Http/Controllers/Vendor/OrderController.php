@@ -26,7 +26,10 @@ class OrderController extends Controller
         /** @var int $vendorId */
         $vendorId = $vendor->id;
 
-        $query = Order::where('vendor_id', $vendorId)
+        // Source of truth is product.vendor_id (orders.vendor_id can drift in older data)
+        $query = Order::whereHas('product', function ($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            })
             ->with(['user', 'product'])
             ->latest();
 
@@ -69,7 +72,9 @@ class OrderController extends Controller
         $user = Auth::user();
         /** @var int $vendorId */
         $vendorId = $user && $user->vendor ? $user->vendor->id : 0;
-        abort_if($order->vendor_id !== $vendorId, 403);
+        $order->loadMissing('product');
+        $ownsOrder = ($order->vendor_id === $vendorId) || ($order->product && $order->product->vendor_id === $vendorId);
+        abort_if(! $ownsOrder, 403);
 
         $allowed = ['accepted', 'shipped', 'completed'];
         abort_if(!in_array($status, $allowed), 400);
