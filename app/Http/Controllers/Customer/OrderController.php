@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\Order;
+use App\Events\OrderPlaced;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -22,6 +24,17 @@ class OrderController extends Controller
         return view('customer.orders.index', compact('orders'));
     }
 
+    // View individual order with real-time status
+    public function show(Order $order)
+    {
+        // Ensure customer can only view their own orders
+        abort_if($order->user_id !== Auth::id(), 403);
+
+        $order->load('product.images', 'product.vendor');
+
+        return view('customer.orders.show', compact('order'));
+    }
+
     // Place order using route model binding
     public function store(Request $request, Product $product)
     {
@@ -32,32 +45,44 @@ class OrderController extends Controller
         ]);
 
         try {
-        DB::transaction(function () use ($request, $product) {
+            DB::transaction(function () use ($request, $product) {
 
-            // 🔒 Lock product row to prevent race conditions
-            /** @var \App\Models\Product $lockedProduct */
-            $lockedProduct = Product::where('id', $product->id)
-                ->lockForUpdate()
-                ->first();
+                // 🔒 Lock product row
+                $lockedProduct = Product::where('id', $product->id)
+                    ->lockForUpdate()
+                    ->first();
 
-            // ❌ Prevent overselling
-            if ($lockedProduct->stock < $request->quantity) {
-                throw new \RuntimeException('Insufficient stock available');
-            }
+                if ($lockedProduct->stock < $request->quantity) {
+                    throw new \RuntimeException('Insufficient stock available');
+                }
 
-            // ✅ Reduce stock
-            $lockedProduct->decrement('stock', $request->quantity);
+                // ✅ Reduce stock
+                $lockedProduct->decrement('stock', $request->quantity);
 
-            // ✅ Create order
-            Order::create([
-                'user_id'    => Auth::id(),
-                'vendor_id'  => $lockedProduct->vendor_id,
-                'product_id' => $lockedProduct->id,
-                'quantity'   => $request->quantity,
-                'price'      => $lockedProduct->price * $request->quantity,
-                'status'     => 'placed',
-            ]);
-        });
+                // ✅ Create order
+                $order = Order::create([
+                    'user_id'    => Auth::id(),
+                    'vendor_id'  => $lockedProduct->vendor_id,
+                    'product_id' => $lockedProduct->id,
+                    'quantity'   => $request->quantity,
+                    'price'      => $lockedProduct->price * $request->quantity,
+                    'status'     => 'placed',
+                ]);
+
+                Log::info('Order created', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'vendor_id' => $order->vendor_id,
+                    'product_id' => $order->product_id,
+                    'status' => $order->status,
+                ]);
+
+                // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)
+                DB::afterCommit(function () use ($order) {
+                    OrderPlaced::dispatch($order->id);
+                });
+            });
+
         } catch (\Throwable $e) {
             return back()
                 ->withErrors(['quantity' => $e->getMessage()])
@@ -78,34 +103,46 @@ class OrderController extends Controller
         ]);
 
         try {
-        DB::transaction(function () use ($data) {
+            DB::transaction(function () use ($data) {
 
-            // 🔒 Lock product row
-            /** @var \App\Models\Product $product */
-            $product = Product::where('id', $data['product_id'])
-                ->lockForUpdate()
-                ->first();
+                // 🔒 Lock product row
+                $product = Product::where('id', $data['product_id'])
+                    ->lockForUpdate()
+                    ->first();
 
-            abort_if($product->status !== 'active', 403);
+                abort_if($product->status !== 'active', 403);
 
-            // ❌ Prevent overselling
-            if ($product->stock < $data['quantity']) {
-                throw new \RuntimeException('Insufficient stock available');
-            }
+                if ($product->stock < $data['quantity']) {
+                    throw new \RuntimeException('Insufficient stock available');
+                }
 
-            // ✅ Reduce stock
-            $product->decrement('stock', $data['quantity']);
+                // ✅ Reduce stock
+                $product->decrement('stock', $data['quantity']);
 
-            // ✅ Create order
-            Order::create([
-                'user_id'    => Auth::id(),
-                'vendor_id'  => $product->vendor_id,
-                'product_id' => $product->id,
-                'quantity'   => $data['quantity'],
-                'price'      => $product->price * $data['quantity'],
-                'status'     => 'placed',
-            ]);
-        });
+                // ✅ Create order
+                $order = Order::create([
+                    'user_id'    => Auth::id(),
+                    'vendor_id'  => $product->vendor_id,
+                    'product_id' => $product->id,
+                    'quantity'   => $data['quantity'],
+                    'price'      => $product->price * $data['quantity'],
+                    'status'     => 'placed',
+                ]);
+
+                Log::info('Order created', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'vendor_id' => $order->vendor_id,
+                    'product_id' => $order->product_id,
+                    'status' => $order->status,
+                ]);
+
+                // ✅ Dispatch OrderPlaced event (triggers payment verification via listener)
+                DB::afterCommit(function () use ($order) {
+                    OrderPlaced::dispatch($order->id);
+                });
+            });
+
         } catch (\Throwable $e) {
             return back()
                 ->withErrors(['quantity' => $e->getMessage()])
