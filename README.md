@@ -291,6 +291,38 @@ Placeholders (add images as the UI stabilizes):
 
 ---
 
+## About Laravel
+
+This repository uses the Laravel framework.
+
+- Elegant MVC foundation (routing, controllers, middleware)
+- Eloquent ORM + migrations
+- Queues, events, notifications, and broadcasting
+
+## Learning Laravel
+
+- Docs: https://laravel.com/docs
+- Laracasts: https://laracasts.com
+
+## Laravel Sponsors
+
+Laravel sponsors: https://laravel.com/sponsors
+
+## Contributing (Laravel)
+
+Laravel contribution guide: https://laravel.com/docs/contributions
+
+## Code of Conduct (Laravel)
+
+Laravel code of conduct: https://laravel.com/docs/contributions#code-of-conduct
+
+## Security Vulnerabilities (Laravel)
+
+Laravel security policy: https://laravel.com/docs/security
+
+---
+
 ## License / Usage Note
 
 No license is currently specified. Treat this repository as proprietary unless a license file is added.
+
